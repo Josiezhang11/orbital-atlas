@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBITAL ATLAS — 全球火箭发射计划数据库</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060f;--bg2:#080c1a;--bg3:#0d1226;--surface:#111827;--surface2:#1a2235;
+  --border:#1e2d4a;--accent:#f97316;--accent2:#fb923c;--accent3:#fbbf24;
+  --blue:#38bdf8;--teal:#2dd4bf;--red:#ef4444;--green:#22c55e;--purple:#a78bfa;
+  --pink:#f472b6;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;
+  --glow:rgba(249,115,22,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* STARS */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(1px 1px at 8% 18%,#fff,transparent),radial-gradient(1px 1px at 28% 62%,rgba(255,255,255,.6),transparent),
+radial-gradient(1px 1px at 52% 8%,#fff,transparent),radial-gradient(1px 1px at 72% 82%,rgba(255,255,255,.7),transparent),
+radial-gradient(1px 1px at 88% 38%,#fff,transparent),radial-gradient(1px 1px at 18% 92%,rgba(255,255,255,.5),transparent),
+radial-gradient(1px 1px at 62% 48%,rgba(255,255,255,.4),transparent),radial-gradient(1px 1px at 92% 12%,rgba(255,255,255,.8),transparent),
+radial-gradient(1px 1px at 42% 72%,rgba(255,255,255,.3),transparent),radial-gradient(1px 1px at 4% 52%,rgba(255,255,255,.6),transparent),
+radial-gradient(1px 1px at 35% 35%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 78% 55%,rgba(255,255,255,.3),transparent);}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;padding:0 40px;border-bottom:2px solid rgba(249,115,22,.2);
+background:rgba(4,6,15,.97);backdrop-filter:blur(24px);}
+.header-inner{max-width:1700px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:76px;}
+.logo{display:flex;align-items:center;gap:14px;text-decoration:none;}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent3));
+clip-path:polygon(50% 0%,80% 30%,100% 100%,50% 75%,0% 100%,20% 30%);
+animation:glow-pulse 3s ease-in-out infinite;}
+@keyframes glow-pulse{0%,100%{filter:drop-shadow(0 0 6px var(--accent));}50%{filter:drop-shadow(0 0 18px var(--accent)) drop-shadow(0 0 36px rgba(249,115,22,.5));}}
+.logo-text-wrap .t1{font-family:'Orbitron',monospace;font-weight:900;font-size:18px;letter-spacing:.12em;color:var(--text);}
+.logo-text-wrap .t2{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:.28em;margin-top:3px;}
+
+nav{display:flex;gap:5px;background:rgba(255,255,255,.05);padding:6px;border-radius:14px;border:1px solid rgba(255,255,255,.08);}
+.nav-btn{
+  background:none;
+  border:1px solid transparent;
+  color:var(--text2);
+  padding:9px 20px;
+  border-radius:9px;
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .22s cubic-bezier(.25,.46,.45,.94);
+  white-space:nowrap;
+}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);}
+.nav-btn.active{
+  color:#fff;
+  background:linear-gradient(135deg,var(--accent) 0%,#c2410c 100%);
+  border-color:rgba(249,115,22,.6);
+  box-shadow:0 0 24px rgba(249,115,22,.45),0 4px 12px rgba(0,0,0,.5);
+  font-weight:700;
+}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:5;}
+.page.active{display:block;}
+
+/* HERO */
+.hero{padding:48px 40px 36px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(249,115,22,.025));}
+.hero-inner{max-width:1700px;margin:0 auto;}
+.eyebrow{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.35em;color:var(--accent);text-transform:uppercase;
+margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--accent);}
+h1{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(28px,3.5vw,50px);line-height:1.05;
+letter-spacing:-.02em;margin-bottom:14px;}
+h1 span{color:var(--accent);}
+.hero-desc{font-size:15px;color:var(--text2);max-width:640px;line-height:1.8;margin-bottom:36px;}
+.stats-row{display:flex;gap:40px;flex-wrap:wrap;}
+.stat .v{font-family:'Orbitron',monospace;font-weight:700;font-size:30px;color:var(--accent);
+text-shadow:0 0 20px rgba(249,115,22,.4);}
+.stat .l{font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.18em;margin-top:4px;}
+.stat-sep{width:1px;background:var(--border);align-self:stretch;}
+
+/* TOOLBAR */
+.toolbar{padding:16px 40px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.toolbar-inner{max-width:1700px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.search-wrap{position:relative;min-width:200px;max-width:320px;flex:1;}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+color:var(--text);padding:9px 12px 9px 36px;font-family:'Noto Sans SC',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.search-wrap input:focus{border-color:var(--accent);}
+.search-wrap input::placeholder{color:var(--text3);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;}
+.fl{font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:.1em;white-space:nowrap;}
+select{background:var(--surface);border:1px solid var(--border);color:var(--text);
+padding:8px 28px 8px 12px;border-radius:6px;font-family:'Noto Sans SC',sans-serif;font-size:13px;outline:none;
+cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+background-repeat:no-repeat;background-position:right 8px center;transition:border-color .2s;}
+select:focus{border-color:var(--accent);}
+.count-badge{margin-left:auto;font-family:'Space Mono',monospace;font-size:13px;color:var(--text2);white-space:nowrap;}
+.count-badge strong{color:var(--accent);}
+
+/* MAIN */
+.main{max-width:1700px;margin:0 auto;padding:28px 40px 80px;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:separate;border-spacing:0 3px;}
+thead th{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--text2);text-transform:uppercase;
+padding:11px 16px;background:var(--bg2);border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none;}
+thead th:hover{color:var(--accent);}
+tbody tr{background:var(--surface);transition:all .15s;cursor:pointer;animation:ri .25s ease both;}
+@keyframes ri{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+tbody tr:hover{background:var(--surface2);transform:translateX(3px);box-shadow:-3px 0 0 var(--accent),0 4px 16px rgba(0,0,0,.35);}
+tbody td{padding:14px 16px;font-size:13px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle;}
+tbody td:first-child{border-left:1px solid var(--border);border-radius:6px 0 0 6px;}
+tbody td:last-child{border-right:1px solid var(--border);border-radius:0 6px 6px 0;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;
+font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.03em;font-weight:700;white-space:nowrap;}
+.p-lk{background:rgba(251,146,60,.14);color:var(--accent2);border:1px solid rgba(251,146,60,.28);}
+.p-lm{background:rgba(56,189,248,.12);color:var(--blue);border:1px solid rgba(56,189,248,.24);}
+.p-lh{background:rgba(45,212,191,.12);color:var(--teal);border:1px solid rgba(45,212,191,.24);}
+.p-s{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.24);}
+.p-h{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.24);}
+.s-active{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.24);}
+.s-dev{background:rgba(251,191,36,.12);color:var(--accent3);border:1px solid rgba(251,191,36,.24);}
+.s-plan{background:rgba(56,189,248,.12);color:var(--blue);border:1px solid rgba(56,189,248,.24);}
+.r-yes{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+.r-no{background:rgba(100,116,139,.1);color:var(--text3);border:1px solid rgba(100,116,139,.2);}
+.ot-commercial{background:rgba(249,115,22,.1);color:var(--accent);border:1px solid rgba(249,115,22,.2);}
+.ot-state{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2);}
+
+.rkt-name{font-family:'Orbitron',monospace;font-weight:700;font-size:13px;color:var(--text);letter-spacing:.04em;}
+.rkt-sub{color:var(--text2);font-size:11px;margin-top:3px;}
+.payload-val{font-family:'Space Mono',monospace;font-size:13px;color:var(--teal);font-weight:700;}
+.year-val{font-family:'Orbitron',monospace;font-size:11px;color:var(--accent);font-weight:700;}
+.date-chip{display:inline-block;background:var(--surface2);border:1px solid rgba(251,146,60,.35);
+border-radius:4px;padding:3px 8px;font-family:'Space Mono',monospace;font-size:10px;color:var(--accent2);
+margin:2px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(4,6,15,.88);z-index:100;backdrop-filter:blur(8px);
+display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:14px;max-width:780px;
+width:calc(100% - 40px);max-height:88vh;overflow-y:auto;transform:scale(.95);transition:transform .22s;
+box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 1px rgba(249,115,22,.12);}
+.modal-overlay.open .modal{transform:scale(1);}
+.modal-hd{padding:28px 28px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;
+align-items:flex-start;position:sticky;top:0;background:var(--bg3);z-index:1;}
+.modal-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;}
+.modal-close{background:var(--surface);border:1px solid var(--border);color:var(--text2);width:34px;height:34px;
+border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-bd{padding:24px 28px 28px;}
+.m-sec-title{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--accent);
+text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.m-sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.m-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.m-field-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:.15em;text-transform:uppercase;margin-bottom:5px;}
+.m-field-val{font-size:14px;color:var(--text);}
+.m-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.eng-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;
+display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-bottom:6px;font-size:11px;}
+.eng-name{font-family:'Orbitron',monospace;font-size:13px;color:var(--text);}
+.eng-spec{color:var(--text2);font-size:12px;margin-top:2px;}
+
+/* ── STATS PAGE ── */
+.stats-page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px;}
+.stat-card-title{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--accent);
+text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.stat-card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.prog-row{margin-bottom:10px;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:5px;}
+.prog-track{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width 1.2s cubic-bezier(.25,.46,.45,.94);}
+.prog-fill.blue{background:linear-gradient(90deg,var(--blue),var(--teal));}
+.prog-fill.purple{background:linear-gradient(90deg,var(--purple),var(--pink));}
+.prog-fill.green{background:linear-gradient(90deg,var(--green),var(--teal));}
+.donut-row{display:flex;align-items:center;gap:16px;margin-bottom:10px;}
+.donut-legend{flex:1;}
+.donut-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+.donut-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── CAPACITY PAGE ── */
+.cap-hero{padding:40px 40px 32px;border-bottom:1px solid var(--border);}
+.cap-hero-inner{max-width:1700px;margin:0 auto;}
+.cap-section{max-width:1700px;margin:0 auto;padding:32px 40px 0;}
+.rank-item{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--surface);
+border:1px solid var(--border);border-radius:8px;margin-bottom:6px;transition:all .15s;cursor:pointer;}
+.rank-item:hover{border-color:var(--accent);background:var(--surface2);}
+.rank-num{font-family:'Orbitron',monospace;font-size:13px;color:var(--text3);width:24px;text-align:right;flex-shrink:0;}
+.rank-num.top{color:var(--accent);}
+.rank-bar-wrap{flex:1;}
+.rank-bar{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;}
+.rank-bar-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.25,.46,.45,.94);}
+.rank-label{width:220px;flex-shrink:0;}
+.rank-name{font-family:'Orbitron',monospace;font-size:13px;color:var(--text);}
+.rank-co{font-size:12px;color:var(--text2);margin-top:3px;}
+.rank-val{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--teal);width:100px;text-align:right;flex-shrink:0;}
+
+/* Annual chart */
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:24px;}
+.chart-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--accent);
+text-transform:uppercase;margin-bottom:20px;}
+.bar-chart{display:flex;align-items:flex-end;gap:12px;height:200px;padding-bottom:28px;position:relative;}
+.bar-chart::after{content:'';position:absolute;bottom:28px;left:0;right:0;height:1px;background:var(--border);}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+.bar-body{width:100%;border-radius:4px 4px 0 0;transition:height 1.2s cubic-bezier(.25,.46,.45,.94);
+background:linear-gradient(180deg,var(--accent),rgba(249,115,22,.3));min-height:4px;
+position:relative;cursor:default;}
+.bar-body:hover{filter:brightness(1.2);}
+.bar-tip{position:absolute;top:-30px;left:50%;transform:translateX(-50%);
+font-family:'Orbitron',monospace;font-size:10px;color:var(--accent);white-space:nowrap;}
+.bar-body.lm{background:linear-gradient(180deg,var(--blue),rgba(56,189,248,.3));}
+.bar-body.lh{background:linear-gradient(180deg,var(--teal),rgba(45,212,191,.3));}
+.bar-lbl{font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);margin-top:6px;}
+
+/* INVEST PAGE */
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:18px;}
+.inv-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+transition:all .18s;cursor:default;}
+.inv-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.5);}
+.inv-card-hd{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+.inv-title{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--text);}
+.inv-sub{font-size:13px;color:var(--text2);margin-top:5px;}
+.inv-valuation{text-align:right;}
+.inv-val-num{font-family:'Orbitron',monospace;font-size:17px;font-weight:700;color:var(--accent);line-height:1.2;}
+.inv-val-lbl{font-size:10px;color:var(--text2);font-family:'Space Mono',monospace;letter-spacing:.1em;margin-top:4px;}
+.inv-card-bd{padding:16px 20px;}
+.inv-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.inv-m-lbl{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;}
+.inv-m-val{font-size:13px;color:var(--text);}
+.inv-investors{margin-bottom:12px;}
+.inv-inv-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:.1em;margin-bottom:7px;}
+.inv-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.inv-chip{background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+padding:4px 10px;font-size:12px;color:var(--text2);}
+.inv-rounds{margin-top:12px;}
+.round-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;
+border-bottom:1px solid rgba(30,45,74,.5);font-size:11px;}
+.round-item:last-child{border-bottom:none;}
+.round-name{font-family:'Space Mono',monospace;color:var(--text2);font-size:11px;}
+.round-val{font-family:'Orbitron',monospace;font-size:13px;color:var(--teal);font-weight:700;}
+.round-date{font-size:11px;color:var(--text3);}
+.funding-bar-wrap{margin-top:14px;}
+.funding-bar-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:5px;}
+.funding-track{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.funding-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--pink));
+transition:width 1.2s cubic-bezier(.25,.46,.45,.94);}
+
+/* PAGE HERO (capacity/invest) */
+.pg-hero{padding:40px 40px 32px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(56,189,248,.02));}
+.pg-hero-inner{max-width:1700px;margin:0 auto;}
+.pg-eyebrow{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.32em;color:var(--blue);
+text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.pg-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--blue);}
+.pg-h1{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(24px,2.8vw,42px);
+line-height:1.08;letter-spacing:-.02em;margin-bottom:10px;}
+.pg-h1 span{color:var(--blue);}
+.pg-desc{font-size:15px;color:var(--text2);max-width:620px;line-height:1.8;}
+
+/* section headers inside main */
+.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:8px;}
+.sec-hd-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--text);}
+.sec-hd::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  header,.hero,.toolbar,.main,.cap-hero,.cap-section,.pg-hero{padding-left:16px;padding-right:16px;}
+  .stats-row{gap:20px;}
+  .m-grid{grid-template-columns:1fr 1fr;}
+  .inv-grid{grid-template-columns:1fr;}
+  .rank-label{width:160px;}
+  .inv-meta{grid-template-columns:1fr;}
+  .nav-btn{padding:6px 10px;font-size:9px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon"></div>
+      <div class="logo-text-wrap">
+        <div class="t1">ORBITAL ATLAS</div>
+        <div class="t2">全球火箭发射计划数据库</div>
+      </div>
+    </a>
+    <nav>
+      <button class="nav-btn active" onclick="showPage('manifest')">🚀 发射清单</button>
+      <button class="nav-btn" onclick="showPage('overview')">📊 统计概览</button>
+      <button class="nav-btn" onclick="showPage('capacity')">⚡ 运力分析</button>
+      <button class="nav-btn" onclick="showPage('invest')">💰 投融资情况</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════════ PAGE: MANIFEST ═══════════════════ -->
+<div class="page active" id="page-manifest">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">2025 — 2030 · Global Launch Manifest</div>
+      <h1>全球火箭<span>发射计划</span>数据库</h1>
+      <p class="hero-desc">收录全球主要航天机构及商业公司未来五年运载火箭发射计划，含推进剂路线、发动机参数、具体发射时间窗口与运力数据。</p>
+      <div class="stats-row">
+        <div class="stat"><div class="v">33</div><div class="l">火箭型号</div></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><div class="v">12</div><div class="l">国家/地区</div></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><div class="v">26</div><div class="l">航天公司</div></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><div class="v">200+</div><div class="l">计划任务数/年</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search" placeholder="搜索火箭、公司、国家…" oninput="applyFilters()">
+      </div>
+      <span class="fl">国家</span>
+      <select id="f-country" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option>美国</option><option>中国</option><option>俄罗斯</option>
+        <option>欧洲</option><option>日本</option><option>印度</option>
+        <option>韩国</option><option>新西兰</option><option>英国</option><option>阿联酋</option>
+      </select>
+      <span class="fl">推进剂</span>
+      <select id="f-prop" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option>液氧/煤油</option><option>液氧/甲烷</option><option>液氧/液氢</option>
+        <option>固体燃料</option><option>偏二甲肼</option>
+      </select>
+      <span class="fl">状态</span>
+      <select id="f-status" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option>现役</option><option>研发中</option>
+      </select>
+      <span class="fl">可复用</span>
+      <select id="f-reuse" onchange="applyFilters()">
+        <option value="">全部</option><option>是</option><option>否</option>
+      </select>
+      <span class="fl">性质</span>
+      <select id="f-type" onchange="applyFilters()">
+        <option value="">全部</option><option>商业</option><option>国有</option>
+      </select>
+      <div class="count-badge" id="cnt">显示 <strong>0</strong>/0</div>
+    </div>
+  </div>
+
+  <div class="main" id="manifest-main"></div>
+</div>
+
+<!-- ═══════════════════ PAGE: OVERVIEW ═══════════════════ -->
+<div class="page" id="page-overview">
+  <div class="pg-hero">
+    <div class="pg-hero-inner">
+      <div class="pg-eyebrow">Statistics Overview</div>
+      <div class="pg-h1">全球火箭<span>统计概览</span></div>
+      <p class="pg-desc">按国别、推进剂类型、可复用性、商业/国有、研发状态及运力等维度对全部收录火箭进行多维统计分析。</p>
+    </div>
+  </div>
+  <div class="main" id="overview-main"></div>
+</div>
+
+<!-- ═══════════════════ PAGE: CAPACITY ═══════════════════ -->
+<div class="page" id="page-capacity">
+  <div class="pg-hero">
+    <div class="pg-hero-inner">
+      <div class="pg-eyebrow">Capacity Analysis · 2025–2030</div>
+      <div class="pg-h1">全球<span>运力分析</span></div>
+      <p class="pg-desc">各型火箭LEO/GTO运力排行榜，以及2025–2030年全球总运力估算趋势（基于计划发射频率）。</p>
+    </div>
+  </div>
+  <div class="main" id="capacity-main"></div>
+</div>
+
+<!-- ═══════════════════ PAGE: INVEST ═══════════════════ -->
+<div class="page" id="page-invest">
+  <div class="pg-hero" style="background:linear-gradient(180deg,transparent,rgba(167,139,250,.02))">
+    <div class="pg-hero-inner">
+      <div class="pg-eyebrow" style="color:var(--purple)">Investment & Financing · 2026–2030</div>
+      <div class="pg-h1" style="color:var(--text)">全球航天公司<span style="color:var(--purple)">投融资全景</span></div>
+      <p class="pg-desc">梳理2026–2030年有发射计划的主要火箭公司估值、融资轮次、投资方及技术路线，数据截至2025年初。</p>
+    </div>
+  </div>
+  <div class="main" id="invest-main"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const rockets = [
+{id:1,name:"猎鹰9号",nameEn:"Falcon 9",country:"🇺🇸 美国",company:"SpaceX",companyType:"商业",
+status:"现役",reusable:"是",firstFlight:2010,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"梅林1D",stage:"一级×9",thrust:"8227kN(海平面)",isp:"311s"},{name:"梅林1D Vac",stage:"二级×1",thrust:"934kN",isp:"348s"}],
+techRoute:"两级入轨，一级垂直回收（海上平台/陆上），最高复用20+次，栅格翼+着陆腿",
+leoPayload:22800,gtoPayload:8300,recoveryMethod:"海上平台/陆上垂直回收",
+plannedMissions:[
+  {date:"2025-01",mission:"星链G11-1星座补充",orbit:"LEO"},
+  {date:"2025-02",mission:"OneWeb L21（商业合同）",orbit:"LEO"},
+  {date:"2025-03",mission:"GPS Block IIIF-2（USSF）",orbit:"MEO"},
+  {date:"2025-Q2",mission:"星链大规模部署×6批次",orbit:"LEO"},
+  {date:"2025-Q3",mission:"NASA CRS-32货运",orbit:"ISS"},
+  {date:"2025-Q4",mission:"Crew-11载人",orbit:"ISS"},
+  {date:"2026",mission:"计划40+次发射（含星链/商业）",orbit:"多轨道"},
+  {date:"2027-2030",mission:"约40-50次/年持续运营",orbit:"多轨道"}
+],
+desc:"世界发射频率最高的轨道级火箭，已完成超过300次一级回收。是SpaceX星链计划主力，同时承接NASA、DoD及商业任务。",
+highlights:["全球年发射次数第一","一级复用最高记录20+次","载人+货运+卫星全覆盖"]},
+
+{id:2,name:"星舰",nameEn:"Starship",country:"🇺🇸 美国",company:"SpaceX",companyType:"商业",
+status:"研发中",reusable:"是",firstFlight:2023,
+propellant:"液氧/甲烷",propClass:"lm",
+engines:[{name:"猛禽3",stage:"超重助推×33",thrust:"约280000kN总",isp:"380s"},{name:"猛禽Vac",stage:"飞船×6",thrust:"约9300kN",isp:"380s"}],
+techRoute:"完全可复用两级，超重助推器机械臂（筷子）捕获，飞船大气减速+垂直着陆，全不锈钢结构",
+leoPayload:150000,gtoPayload:21000,recoveryMethod:"机械臂筷子捕获+着陆腿",
+plannedMissions:[
+  {date:"2025-Q1",mission:"IFT-7/8 集成飞行测试",orbit:"亚轨道"},
+  {date:"2025-Q3",mission:"首次GTO商业载荷（Starlink V3）",orbit:"LEO"},
+  {date:"2026",mission:"NASA Artemis HLS月球着陆器验证",orbit:"月球"},
+  {date:"2026-2027",mission:"首次载人月球绕飞（DearMoon延续）",orbit:"月球"},
+  {date:"2028",mission:"Artemis V载人月面着陆",orbit:"月球表面"},
+  {date:"2029-2030",mission:"初步火星货运任务（计划）",orbit:"火星转移"}
+],
+desc:"人类迄今最大运载火箭，目标完全可复用，支持月球Artemis及火星殖民。2024年实现超重助推器机械臂捕获里程碑。",
+highlights:["LEO运力150吨","NASA Artemis登月着陆器","筷子捕获超重助推器"]},
+
+{id:3,name:"新格伦",nameEn:"New Glenn",country:"🇺🇸 美国",company:"蓝色起源",companyType:"商业",
+status:"现役",reusable:"是",firstFlight:2025,
+propellant:"液氧/液氢+液氧/LNG",propClass:"lh",
+engines:[{name:"BE-4",stage:"一级×7",thrust:"约4900kN×7",isp:"339s"},{name:"BE-3U",stage:"二级×2",thrust:"710kN×2",isp:"452s"}],
+techRoute:"两级入轨，一级垂直海上回收，可复用25次，7米整流罩",
+leoPayload:45000,gtoPayload:13000,recoveryMethod:"海上平台垂直回收",
+plannedMissions:[
+  {date:"2025-01",mission:"NG-1首飞（部分成功）",orbit:"LEO"},
+  {date:"2025-Q2",mission:"NG-2首次完整任务",orbit:"GTO"},
+  {date:"2025-Q3",mission:"NASA ESCAPADE火星探测器",orbit:"火星转移"},
+  {date:"2026",mission:"Amazon Kuiper星座-1批次",orbit:"LEO"},
+  {date:"2027-2030",mission:"Kuiper星座持续部署+商业GTO",orbit:"LEO/GTO"}
+],
+desc:"蓝色起源首款轨道级运载火箭，2025年初首飞。BE-4发动机同时供ULA火神使用，7米整流罩具备大型有效载荷优势。",
+highlights:["7米超大整流罩","一级复用25次","Amazon Kuiper星座主力"]},
+
+{id:4,name:"火神-半人马座",nameEn:"Vulcan Centaur",country:"🇺🇸 美国",company:"联合发射联盟ULA",companyType:"商业",
+status:"现役",reusable:"否",firstFlight:2024,
+propellant:"液氧/LNG+液氧/液氢",propClass:"lk",
+engines:[{name:"BE-4",stage:"一级×2",thrust:"约4900kN×2",isp:"339s"},{name:"RL-10C",stage:"Centaur V×2-4",thrust:"106kN×2",isp:"462s"}],
+techRoute:"两级入轨，高能Centaur V上面级，可选固体助推，发动机舱SMART回收计划",
+leoPayload:27200,gtoPayload:15000,recoveryMethod:"SMART发动机舱回收(开发中)",
+plannedMissions:[
+  {date:"2025-Q1",mission:"VC-2 Cert-2任务（Sierra载人舱）",orbit:"LEO"},
+  {date:"2025-Q3",mission:"USSF国防任务（分类）",orbit:"GEO"},
+  {date:"2026",mission:"AWS/商业GEO卫星×2",orbit:"GTO"},
+  {date:"2027-2030",mission:"约6次/年NSSL+商业任务",orbit:"GTO/GEO"}
+],
+desc:"ULA新一代火箭，取代宇宙神5，摆脱俄制RD-180依赖，高能上面级支持月球及行星际任务。",
+highlights:["Centaur V高能上面级","取代宇宙神5","NSSL国防任务主力"]},
+
+{id:5,name:"阿里安6号",nameEn:"Ariane 6",country:"🇪🇺 欧洲",company:"阿里安集团/ESA",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2024,
+propellant:"液氧/液氢",propClass:"lh",
+engines:[{name:"火神2.1",stage:"一级×1",thrust:"1370kN",isp:"449s"},{name:"火神上面级",stage:"上面级×1",thrust:"180kN",isp:"457s"},{name:"P120C",stage:"固助×2/4",thrust:"3040kN×2",isp:"278s"}],
+techRoute:"两级入轨，A62/A64模块化固体助推，可重启上面级支持多轨道部署",
+leoPayload:21650,gtoPayload:11500,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"A6-002 Galileo导航卫星×2",orbit:"MEO"},
+  {date:"2025-Q3",mission:"A6-003 ESA Earth Explorer卫星",orbit:"SSO"},
+  {date:"2026",mission:"Amazon Kuiper部分批次+CSO-3军侦卫星",orbit:"LEO/SSO"},
+  {date:"2027-2030",mission:"约8-10次/年，含Galileo+商业GTO",orbit:"多轨道"}
+],
+desc:"欧洲新一代主力火箭，2024年7月首飞，维护欧洲自主进入空间能力，A64构型可发射重型GEO卫星。",
+highlights:["欧洲自主进入空间","A62/A64灵活构型","Galileo导航卫星运载"]},
+
+{id:6,name:"长征五号B",nameEn:"CZ-5B",country:"🇨🇳 中国",company:"CALT中国运载火箭技术研究院",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2020,
+propellant:"液氧/液氢+液氧/煤油",propClass:"lh",
+engines:[{name:"YF-77",stage:"芯级×2",thrust:"1020kN×2",isp:"430s"},{name:"YF-100",stage:"助推×4×2",thrust:"1200kN×8",isp:"335s"}],
+techRoute:"一级半构型，无上面级，专用近地重型轨道，一次性使用",
+leoPayload:25000,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q2",mission:"梦天实验舱扩展模块（待定）",orbit:"LEO-CSS"},
+  {date:"2026",mission:"中国大型空间望远镜（CSST）共轨发射",orbit:"LEO"},
+  {date:"2027",mission:"月球科研站先期载荷（嫦娥七号部分）",orbit:"地月转移"},
+  {date:"2028-2030",mission:"按需发射，2-4次/年",orbit:"LEO/地月"}
+],
+desc:"中国近地轨道运力最大火箭，专用中国空间站及大型载荷，25吨LEO运力为中国自主在轨建设提供保障。",
+highlights:["中国空间站建设专用","LEO最大25吨","芯级液氢液氧技术"]},
+
+{id:7,name:"长征九号",nameEn:"CZ-9",country:"🇨🇳 中国",company:"CALT中国运载火箭技术研究院",companyType:"国有",
+status:"研发中",reusable:"是(研究)",firstFlight:2030,
+propellant:"液氧/液氢+液氧/煤油",propClass:"lh",
+engines:[{name:"YF-130",stage:"一级×4",thrust:"4800kN×4",isp:"335s"},{name:"YF-90",stage:"上面级",thrust:"2200kN",isp:"430s"}],
+techRoute:"超重型两级，LEO 150吨目标，一级垂直回收技术研究中，登月/深空专用",
+leoPayload:150000,gtoPayload:50000,recoveryMethod:"垂直回收（研究中）",
+plannedMissions:[
+  {date:"2030",mission:"首飞（目标）",orbit:"LEO验证"},
+  {date:"2030+",mission:"嫦娥八号/中国载人登月",orbit:"地月转移"}
+],
+desc:"中国超重型运载火箭，参数对标SLS/星舰，支撑载人登月工程和火星任务，YF-130发动机研制是核心里程碑。",
+highlights:["LEO 150吨目标","中国载人登月核心","YF-130大推力发动机"]},
+
+{id:8,name:"朱雀三号",nameEn:"Zhuque-3",country:"🇨🇳 中国",company:"蓝箭航天",companyType:"商业",
+status:"研发中",reusable:"是",firstFlight:2025,
+propellant:"液氧/甲烷",propClass:"lm",
+engines:[{name:"天鹊-12",stage:"一级×9",thrust:"约1200kN×9",isp:"340s"},{name:"天鹊-12 Vac",stage:"二级×1",thrust:"约1200kN",isp:"360s"}],
+techRoute:"类猎鹰9路线，液氧甲烷，一级垂直回收，可复用，商业星座服务",
+leoPayload:21000,gtoPayload:6000,recoveryMethod:"垂直回收（陆/海）",
+plannedMissions:[
+  {date:"2025-Q2",mission:"ZQ-3首飞（可复用验证）",orbit:"LEO"},
+  {date:"2025-Q4",mission:"ZQ-3首次商业发射",orbit:"SSO"},
+  {date:"2026",mission:"商业星座批次×4-6",orbit:"LEO/SSO"},
+  {date:"2027-2030",mission:"10+次/年商业部署",orbit:"LEO/SSO"}
+],
+desc:"中国首型可复用液氧甲烷商业运载火箭，对标猎鹰9，计划大幅降低中国商业发射成本，承接小卫星星座客户。",
+highlights:["中国首型可复用甲烷火箭","9发动机并联构型","目标10+次/年"]},
+
+{id:9,name:"天龙三号",nameEn:"Tianlong-3",country:"🇨🇳 中国",company:"天兵科技",companyType:"商业",
+status:"研发中",reusable:"是",firstFlight:2025,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"天火-12",stage:"一级×9",thrust:"约1000kN×9",isp:"330s"}],
+techRoute:"两级液氧煤油，一级垂直回收，中型可复用，2024年首飞中途故障整改",
+leoPayload:17000,gtoPayload:5000,recoveryMethod:"垂直回收",
+plannedMissions:[
+  {date:"2025-Q3",mission:"TL-3首次成功首飞（目标）",orbit:"LEO"},
+  {date:"2026",mission:"一级回收复用验证",orbit:"LEO"},
+  {date:"2027-2030",mission:"8-10次/年商业任务",orbit:"LEO/SSO"}
+],
+desc:"天兵科技中型可复用运载火箭，2024年5月首飞试验中途因故障中止，整改后计划2025年再次首飞。",
+highlights:["可复用中型火箭","液氧煤油技术路线","中国商业航天第二梯队"]},
+
+{id:10,name:"引力一号",nameEn:"Gravity-1",country:"🇨🇳 中国",company:"东方空间",companyType:"商业",
+status:"现役",reusable:"否",firstFlight:2024,
+propellant:"固体燃料",propClass:"s",
+engines:[{name:"固体分级发动机",stage:"四级",thrust:"分级推力",isp:"约280s"}],
+techRoute:"四级全固体，海上平台发射，快速响应，低成本小型商业任务",
+leoPayload:6500,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"引力一号-2 商业遥感星座",orbit:"SSO"},
+  {date:"2025-Q3",mission:"引力一号-3 国防/商业混合载荷",orbit:"SSO"},
+  {date:"2026-2030",mission:"4-8次/年，海上平台发射",orbit:"SSO/LEO"}
+],
+desc:"全球运力最大固体火箭，2024年1月从海上平台成功首飞，一次发射11颗卫星，刷新固体火箭纪录。",
+highlights:["固体运力世界第一","海上平台发射","2024年成功首飞"]},
+
+{id:11,name:"H3",nameEn:"H3",country:"🇯🇵 日本",company:"三菱重工/JAXA",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2024,
+propellant:"液氧/液氢",propClass:"lh",
+engines:[{name:"LE-9",stage:"一级×2/3",thrust:"1471kN×2",isp:"425s"},{name:"LE-5B-3",stage:"上面级×1",thrust:"137kN",isp:"447s"}],
+techRoute:"两级液氢液氧，可选固体助推，模块化H3-22/30/32构型",
+leoPayload:7900,gtoPayload:4000,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"H3-3 ALOS-4光学观测卫星",orbit:"SSO"},
+  {date:"2025-Q3",mission:"H3-4 QZS-7准天顶卫星",orbit:"GTO"},
+  {date:"2026",mission:"H3-5/6 商业GEO+月球探测支持",orbit:"GTO/月球"},
+  {date:"2027-2030",mission:"3-5次/年政府+商业任务",orbit:"多轨道"}
+],
+desc:"日本新一代主力火箭，2024年H3-2成功，首飞失败阴影消散。LE-9国产氢氧发动机，更低成本定位。",
+highlights:["日本独立进入空间","LE-9全新氢氧发动机","灵活模块化构型"]},
+
+{id:12,name:"GSLV Mk III (LVM3)",nameEn:"LVM3",country:"🇮🇳 印度",company:"ISRO",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2017,
+propellant:"液氧/液氢+混合",propClass:"lh",
+engines:[{name:"CE-20",stage:"上面级×1",thrust:"200kN",isp:"442s"},{name:"Vikas",stage:"芯级×2",thrust:"760kN×2",isp:"293s"},{name:"S200",stage:"固助×2",thrust:"5150kN×2",isp:"274s"}],
+techRoute:"三级复合推进，固+液+氢氧，支持GTO及月球轨道注入",
+leoPayload:10000,gtoPayload:4000,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"Gaganyaan G1 无人验证飞行",orbit:"LEO"},
+  {date:"2025-Q4",mission:"Gaganyaan G2 载人首飞（目标）",orbit:"LEO"},
+  {date:"2026",mission:"Chandrayaan-4月球样品返回预发射",orbit:"月球"},
+  {date:"2027-2030",mission:"Gaganyaan驻留+商业GTO 2-3次/年",orbit:"LEO/GTO"}
+],
+desc:"印度最强运载火箭，承载Gaganyaan载人航天计划，曾执行月船3号任务。计划商业化后降低发射成本。",
+highlights:["Gaganyaan载人飞船运载","月船3号成功运载","印度最大运载火箭"]},
+
+{id:13,name:"电子号",nameEn:"Electron",country:"🇳🇿 新西兰",company:"火箭实验室",companyType:"商业",
+status:"现役",reusable:"是(部分)",firstFlight:2017,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"卢瑟福",stage:"一级×9",thrust:"24kN×9",isp:"311s"},{name:"卢瑟福Vac",stage:"二级×1",thrust:"25kN",isp:"343s"}],
+techRoute:"两级，电动泵循环3D打印发动机，一级直升机空中捕获回收",
+leoPayload:300,gtoPayload:200,recoveryMethod:"直升机空中捕获",
+plannedMissions:[
+  {date:"2025-Q1",mission:"批次×3 商业Earth Observation卫星",orbit:"SSO"},
+  {date:"2025-Q2",mission:"NASA VADR太空探测任务",orbit:"LEO"},
+  {date:"2025-Q3/Q4",mission:"批次×8 商业小卫星",orbit:"SSO/LEO"},
+  {date:"2026-2030",mission:"20+次/年商业小卫星",orbit:"SSO/LEO"}
+],
+desc:"全球最成功小型商业火箭，电动泵循环独创，已完成50+次发射，直升机回收一级创新实践。",
+highlights:["小型火箭市场领导者","直升机空中捕获一级","电动泵循环发动机"]},
+
+{id:14,name:"中子星",nameEn:"Neutron",country:"🇺🇸 美国",company:"火箭实验室",companyType:"商业",
+status:"研发中",reusable:"是",firstFlight:2026,
+propellant:"液氧/甲烷",propClass:"lm",
+engines:[{name:"阿基米德",stage:"一级×9",thrust:"约1000kN×9",isp:"360s"}],
+techRoute:"中型两级，整流罩随一级整体回收，甲烷推进，海上平台降落",
+leoPayload:13000,gtoPayload:1500,recoveryMethod:"海上平台垂直回收+整流罩整体回收",
+plannedMissions:[
+  {date:"2026-Q4",mission:"中子星首飞（目标）",orbit:"LEO验证"},
+  {date:"2027",mission:"首次商业有效载荷任务",orbit:"LEO"},
+  {date:"2028-2030",mission:"10+次/年中型星座部署",orbit:"LEO/SSO"}
+],
+desc:"火箭实验室中型可复用火箭，针对中型星座市场，整流罩+一级整体回收独特设计降低复用成本。",
+highlights:["整流罩+一级整体回收","中型星座市场","液氧甲烷推进"]},
+
+{id:15,name:"质子-M",nameEn:"Proton-M",country:"🇷🇺 俄罗斯",company:"赫鲁尼切夫",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2001,
+propellant:"偏二甲肼/四氧化二氮",propClass:"h",
+engines:[{name:"RD-275M",stage:"一级×6",thrust:"1750kN×6",isp:"316s"},{name:"RD-0213",stage:"二/三级",thrust:"612/583kN",isp:"326s"}],
+techRoute:"三级，高毒偏二甲肼，历史可靠性高，逐步退役中",
+leoPayload:23000,gtoPayload:6920,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q2",mission:"Luna-26月球轨道探测器",orbit:"地月转移"},
+  {date:"2026",mission:"俄罗斯GEO通信卫星×2",orbit:"GTO"},
+  {date:"2027-2028",mission:"最终批次GTO商业任务（过渡期）",orbit:"GTO"}
+],
+desc:"俄罗斯重型火箭，服役逾60年，高毒推进剂制约，逐步由安加拉A5取代，预计2028年前退役。",
+highlights:["60年服役历史","GEO重型发射","逐步被安加拉取代"]},
+
+{id:16,name:"安加拉A5",nameEn:"Angara-A5",country:"🇷🇺 俄罗斯",company:"赫鲁尼切夫",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2014,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"RD-191",stage:"通用模块×5",thrust:"2090kN×5",isp:"337s"}],
+techRoute:"模块化通用火箭模块URM，3/5/7模块不同构型，清洁液氧煤油",
+leoPayload:24500,gtoPayload:7500,recoveryMethod:"不可复用（可复用版研究中）",
+plannedMissions:[
+  {date:"2025-Q1",mission:"Angara-A5M首飞改进型",orbit:"GTO"},
+  {date:"2025-Q4",mission:"GLONASS-K2导航卫星",orbit:"MEO"},
+  {date:"2026-2030",mission:"3-5次/年，逐步增产替代质子",orbit:"GTO/GEO"}
+],
+desc:"俄罗斯新一代模块化火箭，清洁推进，计划2028年前完全取代质子-M，也在研究可复用改进型。",
+highlights:["模块化URM设计","清洁液氧煤油","取代质子-M路线图"]},
+
+{id:17,name:"PSLV-XL",nameEn:"PSLV-XL",country:"🇮🇳 印度",company:"ISRO",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2008,
+propellant:"固体/液体混合",propClass:"s",
+engines:[{name:"S139固体",stage:"一级",thrust:"4846kN",isp:"269s"},{name:"Vikas",stage:"二级×1",thrust:"724kN",isp:"293s"}],
+techRoute:"四级交替固液，高可靠，多星分发能力强，小型GTO及SSO专用",
+leoPayload:3800,gtoPayload:1750,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1/Q2",mission:"PSLV-C62/C63 商业多星发射",orbit:"SSO"},
+  {date:"2025-Q3",mission:"Aditya-L2太阳探测延伸任务支持载荷",orbit:"日地L2"},
+  {date:"2026-2030",mission:"5-8次/年，含商业OneWeb/Planet",orbit:"SSO/LEO"}
+],
+desc:"印度最可靠工作马，50+次成功纪录，曾一次发射104颗卫星世界纪录，支持印度商业发射服务。",
+highlights:["50+次连续成功","印度最高可靠性","一次发射104颗卫星纪录"]},
+
+{id:18,name:"努里号",nameEn:"KSLV-II Nuri",country:"🇰🇷 韩国",company:"KARI/韩华",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2021,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"75t国产发动机",stage:"一级×4+二级×1",thrust:"740kN×4/740kN",isp:"298/315s"},{name:"7t发动机",stage:"三级×1",thrust:"69kN",isp:"325s"}],
+techRoute:"三级液氧煤油，完全国产发动机，2022年成功首飞，韩国自主进入空间",
+leoPayload:3500,gtoPayload:1500,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q2",mission:"Nuri-4 超小型卫星星座先驱（6U）",orbit:"SSO"},
+  {date:"2026",mission:"Nuri-5 500kg级Earth Obs卫星",orbit:"SSO"},
+  {date:"2027-2030",mission:"2-3次/年，韩国政府+商业",orbit:"SSO/LEO"}
+],
+desc:"韩国独立研发，完全国产发动机，2022年成功首飞，韩国成为全球第七个拥有自主大型运载火箭的国家。",
+highlights:["韩国首款自主运载火箭","完全国产发动机","第七个自主入轨国"]},
+
+{id:19,name:"织女星-C",nameEn:"Vega-C",country:"🇪🇺 欧洲",company:"阿维奥/ESA",companyType:"国有",
+status:"研发中",reusable:"否",firstFlight:2022,
+propellant:"固体+偏肼上面级",propClass:"s",
+engines:[{name:"P120C",stage:"一级",thrust:"3040kN",isp:"278s"},{name:"Zefiro-40",stage:"二级",thrust:"1304kN",isp:"295s"},{name:"AVUM+",stage:"上面级",thrust:"2.45kN",isp:"315s"}],
+techRoute:"四级固体+液体上面级，欧洲小型SSO专用，2022年首飞失败停飞整改",
+leoPayload:2300,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q3",mission:"Vega-C 复飞任务（整改后）",orbit:"SSO"},
+  {date:"2026",mission:"ESA Earth Explorer/Copernicus小卫星",orbit:"SSO"},
+  {date:"2027-2030",mission:"3-4次/年，欧洲小卫星任务",orbit:"SSO"}
+],
+desc:"欧洲小型运载火箭，2022年首飞失败后停飞两年整改，P120C助推器与阿里安6共用，预计2025年恢复。",
+highlights:["P120C与阿里安6共用","欧洲小卫星市场","2025年计划恢复飞行"]},
+
+{id:20,name:"电子号扩展版",nameEn:"Electron XL",country:"🇺🇸 美国",company:"火箭实验室",companyType:"商业",
+status:"研发中",reusable:"是",firstFlight:2026,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"卢瑟福改进版",stage:"一级×10",thrust:"约30kN×10",isp:"315s"}],
+techRoute:"电子号扩大版，LEO运力提升至600kg，保留直升机回收技术",
+leoPayload:600,gtoPayload:300,recoveryMethod:"直升机空中捕获",
+plannedMissions:[
+  {date:"2026-Q3",mission:"Electron XL首飞",orbit:"SSO"},
+  {date:"2027-2030",mission:"并行电子号/XL 25+次/年",orbit:"SSO/LEO"}
+],
+desc:"火箭实验室小型火箭升级版，运力提升至600kg，与中子星形成高低搭配覆盖完整小中型市场。",
+highlights:["电子号升级版","运力加倍至600kg","直升机回收保留"]},
+
+{id:21,name:"SLS Block 1B",nameEn:"SLS Block 1B",country:"🇺🇸 美国",company:"NASA/波音",companyType:"国有",
+status:"研发中",reusable:"否",firstFlight:2026,
+propellant:"液氧/液氢",propClass:"lh",
+engines:[{name:"RS-25E",stage:"芯级×4",thrust:"1859kN×4",isp:"453s"},{name:"RL-10C",stage:"EUS×4",thrust:"106kN×4",isp:"462s"},{name:"RSRMV固助",stage:"×2",thrust:"16000kN×2",isp:"269s"}],
+techRoute:"两级半，EUS探索上面级，超大整流罩，专为载人月球及深空",
+leoPayload:42000,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2026-Q2",mission:"Artemis IV（SLS Block 1B首飞+载人月球轨道）",orbit:"月球"},
+  {date:"2028",mission:"Artemis V（载人月面着陆）",orbit:"月球表面"},
+  {date:"2030",mission:"Artemis VI（月球基地前哨）",orbit:"月球"}
+],
+desc:"NASA Artemis登月计划主力，Block 1B增加EUS上面级，可一次发射猎户座+大型月球着陆器货物。",
+highlights:["Artemis载人登月主力","EUS高能上面级","42吨LEO超重型"]},
+
+{id:22,name:"捷诺 Terran R",nameEn:"Terran R",country:"🇺🇸 美国",company:"相对论空间",companyType:"商业",
+status:"研发中",reusable:"是",firstFlight:2026,
+propellant:"液氧/甲烷",propClass:"lm",
+engines:[{name:"Aeon R",stage:"一级×7",thrust:"约890kN×7",isp:"350s"}],
+techRoute:"3D打印结构，液氧甲烷，一级垂直回收，取消Terran 1小火箭全力研发中型",
+leoPayload:20000,gtoPayload:5000,recoveryMethod:"垂直回收",
+plannedMissions:[
+  {date:"2026-Q4",mission:"Terran R首飞",orbit:"LEO验证"},
+  {date:"2027-2030",mission:"商业卫星星座 8-12次/年",orbit:"LEO/SSO"}
+],
+desc:"全球首款以3D打印为核心工艺的中型可复用商业火箭，80%结构件3D打印，大幅缩短制造周期。",
+highlights:["80%结构3D打印","液氧甲烷推进","全力All-in中型可复用"]},
+
+{id:23,name:"朱雀二号",nameEn:"Zhuque-2",country:"🇨🇳 中国",company:"蓝箭航天",companyType:"商业",
+status:"现役",reusable:"否",firstFlight:2023,
+propellant:"液氧/甲烷",propClass:"lm",
+engines:[{name:"天鹊-12",stage:"一级×4",thrust:"1200kN×4",isp:"330s"},{name:"天鹊-12 Vac",stage:"二级×1",thrust:"1200kN",isp:"350s"}],
+techRoute:"两级甲烷火箭，全球首型成功入轨甲烷火箭，中型商业定位",
+leoPayload:6000,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"ZQ-2 Y04 商业遥感卫星群",orbit:"SSO"},
+  {date:"2025-Q3",mission:"ZQ-2 Y05 IoT星座",orbit:"LEO"},
+  {date:"2026",mission:"4-6次商业任务",orbit:"SSO/LEO"},
+  {date:"2027-2030",mission:"与ZQ-3并行运营",orbit:"LEO/SSO"}
+],
+desc:"全球首型成功入轨的液氧甲烷运载火箭（2023年7月），早于SpaceX星舰和ULA火神完成入轨里程碑。",
+highlights:["全球首型甲烷入轨火箭","2023年历史性首飞","中国商业航天里程碑"]},
+
+{id:24,name:"长征二号F",nameEn:"CZ-2F",country:"🇨🇳 中国",company:"CALT",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:1999,
+propellant:"偏二甲肼/四氧化二氮",propClass:"h",
+engines:[{name:"YF-20B/YF-25",stage:"芯级+助推×4",thrust:"2961kN总",isp:"289s"}],
+techRoute:"两级偏二甲肼，专用载人，逃逸救援塔，高可靠设计",
+leoPayload:8600,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q2",mission:"神舟二十一号撤离/神舟二十二号进驻",orbit:"LEO-CSS"},
+  {date:"2025-Q4",mission:"神舟二十三号载人任务",orbit:"LEO-CSS"},
+  {date:"2026-2030",mission:"每年2-3次神舟载人/货运任务",orbit:"LEO-CSS"}
+],
+desc:"中国载人航天专用火箭，执行全部神舟飞船任务，100%任务成功率，计划持续服役至2030年代。",
+highlights:["神舟载人任务专用","100%成功率","逃逸救援系统"]},
+
+{id:25,name:"Firefly Alpha",nameEn:"Firefly Alpha",country:"🇺🇸 美国",company:"萤火虫航天",companyType:"商业",
+status:"现役",reusable:"否",firstFlight:2022,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"Reaver 1",stage:"一级×4",thrust:"196kN×4",isp:"295s"},{name:"Lightning 1",stage:"二级×1",thrust:"70kN",isp:"322s"}],
+techRoute:"两级，碳纤维复合材料，独特侧进气发动机，小型商业",
+leoPayload:1030,gtoPayload:630,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"Alpha-6 NASA VCLS商业服务",orbit:"LEO"},
+  {date:"2025-Q3",mission:"Alpha-7 商业遥感多星",orbit:"SSO"},
+  {date:"2026-2030",mission:"5-8次/年，与Beta并行",orbit:"SSO/LEO"}
+],
+desc:"萤火虫航天小型运载火箭，碳纤维轻量化结构，2022年成功首飞后已完成多次商业任务，Beta中型版在研。",
+highlights:["碳纤维轻量结构","侧进气发动机设计","Beta中型版在研"]},
+
+{id:26,name:"天龙二号",nameEn:"Tianlong-2",country:"🇨🇳 中国",company:"天兵科技",companyType:"商业",
+status:"现役",reusable:"否",firstFlight:2023,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"天火-11",stage:"一级×3",thrust:"约800kN×3",isp:"320s"},{name:"天火-11",stage:"二级×1",thrust:"约800kN",isp:"340s"}],
+techRoute:"两级液氧煤油，中型商业，2023年首飞成功",
+leoPayload:5000,gtoPayload:2000,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q2",mission:"TL-2 Y04 商业星座批次",orbit:"SSO"},
+  {date:"2025-Q4",mission:"TL-2 Y05 通信卫星",orbit:"LEO"},
+  {date:"2026-2030",mission:"5-8次/年商业任务",orbit:"SSO/LEO"}
+],
+desc:"天兵科技中型运载火箭，2023年成功首飞，是中国商业液体火箭最早成功的型号之一，已积累多次发射经验。",
+highlights:["中国商业液体火箭先驱","2023年首飞成功","中型轨道多次运营"]},
+
+{id:27,name:"KAIROS",nameEn:"KAIROS",country:"🇯🇵 日本",company:"Space One",companyType:"商业",
+status:"研发中",reusable:"否",firstFlight:2024,
+propellant:"固体燃料",propClass:"s",
+engines:[{name:"固体分级",stage:"一/二/三级+液体姿控",thrust:"分级",isp:"约280s"}],
+techRoute:"四级固体，日本和歌山发射场，快速响应政府小卫星",
+leoPayload:250,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1",mission:"KAIROS-2首飞（整改后再次尝试）",orbit:"SSO"},
+  {date:"2026-2030",mission:"5+次/年政府快响任务",orbit:"SSO"}
+],
+desc:"日本首款商业小型火箭，2024年3月首飞自毁，整改后2025年再次尝试，主攻日本政府快响小卫星市场。",
+highlights:["日本首款商业小型火箭","和歌山本土发射场","快速响应任务"]},
+
+{id:28,name:"Skyrora XL",nameEn:"Skyrora XL",country:"🇬🇧 英国",company:"Skyrora",companyType:"商业",
+status:"研发中",reusable:"否",firstFlight:2026,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"Skyforce",stage:"一级×1",thrust:"约200kN",isp:"320s"}],
+techRoute:"两级，苏格兰SaxaVord发射场，欧洲SSO市场",
+leoPayload:315,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2026-Q4",mission:"SXL首飞（苏格兰发射场）",orbit:"SSO"},
+  {date:"2027-2030",mission:"4-6次/年英国政府+欧洲商业",orbit:"SSO"}
+],
+desc:"英国本土运载火箭，计划从苏格兰SaxaVord航天港发射，减少欧洲小卫星对美国火箭的依赖。",
+highlights:["英国首款本土发射火箭","苏格兰SaxaVord港","欧洲SSO小卫星市场"]},
+
+{id:29,name:"RS1",nameEn:"RS1",country:"🇺🇸 美国",company:"ABL Space Systems",companyType:"商业",
+status:"研发中",reusable:"否",firstFlight:2023,
+propellant:"液氧/煤油",propClass:"lk",
+engines:[{name:"E2",stage:"一级×9",thrust:"170kN×9",isp:"310s"},{name:"E2 Vac",stage:"二级×1",thrust:"170kN",isp:"340s"}],
+techRoute:"两级，9发动机模块化，24小时快速集成发射",
+leoPayload:1350,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q3",mission:"RS1-2 首次成功入轨（目标）",orbit:"SSO"},
+  {date:"2026-2030",mission:"4-6次/年，快响军事任务",orbit:"SSO/LEO"}
+],
+desc:"ABL Space快速集成小型火箭，24小时内完成发射准备，2023年首飞失败，整改后2025年再次尝试。",
+highlights:["24小时快速集成","9发动机模块设计","快响小卫星市场"]},
+
+{id:30,name:"长征八号",nameEn:"CZ-8",country:"🇨🇳 中国",company:"CALT",companyType:"国有",
+status:"现役",reusable:"否",firstFlight:2020,
+propellant:"液氧/煤油+液氧/液氢",propClass:"lk",
+engines:[{name:"YF-100",stage:"一级×2",thrust:"1200kN×2",isp:"335s"},{name:"YF-75",stage:"上面级×2",thrust:"78kN×2",isp:"438s"}],
+techRoute:"两级半，模块化设计，低成本中型太阳同步轨道专用",
+leoPayload:8000,gtoPayload:0,recoveryMethod:"不可复用（可复用版CZ-8R研究）",
+plannedMissions:[
+  {date:"2025-Q1",mission:"CZ-8A Y03 遥感31号星座",orbit:"SSO"},
+  {date:"2025-Q3",mission:"CZ-8A Y04 商业低轨星座",orbit:"SSO"},
+  {date:"2026-2030",mission:"6-10次/年，主力SSO商业任务",orbit:"SSO"}
+],
+desc:"中国低成本中型运载火箭，专攻太阳同步轨道商业市场，2022年商业发射试验一箭22星。",
+highlights:["低成本中型SSO专用","一箭22星商业纪录","CZ-8R可复用版在研"]},
+
+{id:31,name:"捷龙三号",nameEn:"Jielong-3",country:"🇨🇳 中国",company:"中科宇航",companyType:"商业",
+status:"现役",reusable:"否",firstFlight:2022,
+propellant:"固体燃料",propClass:"s",
+engines:[{name:"固体分级",stage:"四级",thrust:"分级",isp:"约280s"}],
+techRoute:"四级全固体，海上/陆上发射，快速响应，商业小卫星",
+leoPayload:1500,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"2025-Q1/Q2",mission:"捷龙3-5/6 商业遥感星座",orbit:"SSO"},
+  {date:"2025-Q3/Q4",mission:"捷龙3-7/8 IoT星座批次",orbit:"LEO"},
+  {date:"2026-2030",mission:"6-10次/年商业任务",orbit:"SSO/LEO"}
+],
+desc:"中国中科宇航固体商业运载火箭，海上/陆上灵活发射，已多次商业飞行，是中国固体商业火箭代表。",
+highlights:["海陆两用灵活发射","固体快响能力","中科院背景"]},
+
+{id:32,name:"朱雀一号",nameEn:"Zhuque-1",country:"🇨🇳 中国",company:"蓝箭航天",companyType:"商业",
+status:"研发中",reusable:"否",firstFlight:2018,
+propellant:"固体燃料",propClass:"s",
+engines:[{name:"固体分级",stage:"三级",thrust:"分级",isp:"约270s"}],
+techRoute:"三级全固体小型火箭，2018年首飞部分失败，已退役聚焦朱雀2/3",
+leoPayload:200,gtoPayload:0,recoveryMethod:"不可复用",
+plannedMissions:[
+  {date:"N/A",mission:"已退役，资源聚焦ZQ-2/ZQ-3",orbit:"N/A"}
+],
+desc:"蓝箭航天早期固体小型火箭，2018年首飞三级故障未入轨，已退役，公司转型液体甲烷火箭赛道。",
+highlights:["蓝箭早期型号","已退役聚焦甲烷路线","奠定公司运营基础"]},
+
+{id:33,name:"Firefly Beta",nameEn:"Firefly Beta",country:"🇺🇸 美国",company:"萤火虫航天",companyType:"商业",
+status:"研发中",reusable:"是(部分)",firstFlight:2027,
+propellant:"液氧/甲烷",propClass:"lm",
+engines:[{name:"Miranda",stage:"一级×7",thrust:"约600kN×7",isp:"~355s"}],
+techRoute:"中型两级甲烷，一级可复用，Miranda全新发动机，Alpha升级路线",
+leoPayload:8000,gtoPayload:3000,recoveryMethod:"垂直回收（计划）",
+plannedMissions:[
+  {date:"2027-Q2",mission:"Beta首飞",orbit:"LEO"},
+  {date:"2028-2030",mission:"5-8次/年商业中型任务",orbit:"LEO/SSO"}
+],
+desc:"萤火虫航天中型可复用火箭，与Alpha形成大小搭配，Miranda发动机全新研发，目标2027年首飞。",
+highlights:["Alpha/Beta产品线矩阵","Miranda全新甲烷发动机","可复用中型目标"]}
+];
+
+// ──────────────────────────────────────────
+// INVEST DATA  (expanded, 22 companies)
+// ──────────────────────────────────────────
+const investData = [
+{company:"SpaceX",country:"🇺🇸 美国",founded:2002,
+ valuation:"约3,500亿美元",valuationUSD:350000,totalFundingUSD:8000,
+ totalFunding:"约80亿美元",status:"私有",
+ companyType:"商业",rockets:["猎鹰9号","星舰","猎鹰重型"],
+ techRoute:"液氧/煤油 + 液氧/甲烷，完全可复用，垂直回收",
+ leoPayload:"22.8t / 150t",nextFlight:"2025-Q1",
+ keyMilestone:"2024年超重助推器机械臂捕获，猎鹰9第300+次回收",
+ investors:["谷歌","富达投资","Founders Fund","DFJ","Valor Equity Partners","沙特公共投资基金PIF","卡塔尔投资局","a16z"],
+ rounds:[
+   {name:"种子/A轮",amount:"1亿美元",date:"2008",note:"埃隆·马斯克个人投入6500万美元"},
+   {name:"B-D轮",amount:"约4亿美元",date:"2012-2015",note:"谷歌/富达领投"},
+   {name:"E-H轮",amount:"约35亿美元",date:"2017-2021",note:"估值跃升至1000亿美元"},
+   {name:"2022年融资",amount:"20亿美元",date:"2022-07",note:"估值1270亿美元"},
+   {name:"2023年融资",amount:"7.5亿美元",date:"2023-06",note:"估值1500亿美元"},
+   {name:"2024年融资",amount:"60亿美元",date:"2024-12",note:"估值达3500亿美元"}
+ ],
+ note:"全球最高估值私有科技公司之一。主要营收来源：星链订阅（约55%）、商业发射（约30%）、政府合同（约15%）。星链IPO若成行，将进一步释放价值。"},
+
+{company:"蓝色起源",country:"🇺🇸 美国",founded:2000,
+ valuation:"约100-150亿美元(估算)",valuationUSD:12500,totalFundingUSD:21000,
+ totalFunding:"约200亿美元（贝索斯注资）",status:"私有",
+ companyType:"商业",rockets:["新格伦","新谢泼德"],
+ techRoute:"液氧/LNG（一级）+ 液氧/液氢（二级），BE-4 发动机，一级可复用25次",
+ leoPayload:"45t",nextFlight:"2025-Q2",
+ keyMilestone:"2025年1月新格伦首飞，NASA HLS月球着陆器合同",
+ investors:["杰夫·贝索斯（个人）","NASA（政府合同）","未披露战略投资方"],
+ rounds:[
+   {name:"贝索斯逐年注资",amount:"约170亿美元累计",date:"2000-2023",note:"贝索斯每年出售亚马逊股票注入"},
+   {name:"NASA HLS合同",amount:"34亿美元",date:"2023-05",note:"月球着陆器Artemis合同"},
+   {name:"外部战略融资（传闻）",amount:"约10亿美元",date:"2024",note:"战略合作方入股，细节未披露"}
+ ],
+ note:"高度私密，几乎不对外披露财务数据。BE-4发动机同时供货ULA火神，形成重要收入。新格伦2025年首飞是商业化关键节点。"},
+
+{company:"火箭实验室",country:"🇳🇿/🇺🇸",founded:2006,
+ valuation:"约40-55亿美元（NASDAQ:RKLB）",valuationUSD:4750,totalFundingUSD:1300,
+ totalFunding:"约13亿美元",status:"上市(NASDAQ)",
+ companyType:"商业",rockets:["电子号","中子星（在研）"],
+ techRoute:"液氧/煤油（电动泵循环）+ 液氧/甲烷（中子星），直升机回收一级",
+ leoPayload:"0.3t / 13t",nextFlight:"2025-Q1",
+ keyMilestone:"电子号50+次发射，中子星2026年目标首飞",
+ investors:["Khosla Ventures","DCVC","Bessemer Venture Partners","Greenspring Associates","公开市场股东"],
+ rounds:[
+   {name:"A-C轮",amount:"约1.5亿美元",date:"2014-2019",note:"Khosla/DCVC领投"},
+   {name:"D轮",amount:"1.4亿美元",date:"2020-10",note:"估值14亿美元"},
+   {name:"SPAC上市(Vector Acquisition)",amount:"7.77亿美元",date:"2021-08",note:"估值44亿美元上市"},
+   {name:"后续增发",amount:"约4亿美元",date:"2022-2024",note:"用于中子星研发和收购"}
+ ],
+ note:"已盈利的上市小型火箭公司，正向航天系统综合商（卫星+发射）转型。通过收购SolAero、Sinclair等扩大非发射收入。"},
+
+{company:"维珍轨道",country:"🇺🇸 美国",founded:2017,
+ valuation:"已破产清算（2023）",valuationUSD:0,totalFundingUSD:1000,
+ totalFunding:"约10亿美元",status:"已破产",
+ companyType:"商业",rockets:["发射器一号（已停产）"],
+ techRoute:"液氧/煤油，波音747空射，一次性",
+ leoPayload:"0.3t",nextFlight:"N/A",
+ keyMilestone:"2023年3月破产，资产被收购拆散",
+ investors:["理查德·布兰森（维珍集团）","Boeing","Mubadala Investment","Harbert Space","AE Industrial Partners"],
+ rounds:[
+   {name:"A-B轮",amount:"约1.2亿美元",date:"2017-2019"},
+   {name:"C-D轮",amount:"约3亿美元",date:"2020-2021"},
+   {name:"上市增发（NASDAQ:VORB）",amount:"约2.5亿美元",date:"2021"},
+   {name:"桥接融资（失败）",amount:"约2亿美元（未能完成）",date:"2023"}
+ ],
+ note:"2023年1月最后一次发射失败后资金链断裂，无法完成桥接融资，3月破产清算。是商业航天高融资高风险的典型案例。"},
+
+{company:"Astra Space",country:"🇺🇸 美国",founded:2016,
+ valuation:"约1.5亿美元（市值低迷）",valuationUSD:150,totalFundingUSD:500,
+ totalFunding:"约5亿美元",status:"上市(NASDAQ:ASTR)，火箭业务暂停",
+ companyType:"商业",rockets:["Rocket 3（已停产）","Rocket 4（暂停）"],
+ techRoute:"液氧/煤油，小型快速制造，极简设计",
+ leoPayload:"0.15t",nextFlight:"暂停中",
+ keyMilestone:"2022年转型推进系统业务，火箭业务暂停",
+ investors:["Airbus Ventures","Bessemer Venture Partners","Tao Capital","ACME Capital","公开市场"],
+ rounds:[
+   {name:"A-C轮",amount:"约1亿美元",date:"2016-2020"},
+   {name:"SPAC上市",amount:"约2.2亿美元",date:"2021"},
+   {name:"后续增发",amount:"约1.8亿美元",date:"2022"}
+ ],
+ note:"曾凭借「快速迭代」故事高度融资，但多次发射失败后转型卫星推进系统（Astra Spacecraft Engines），火箭研发已暂停。"},
+
+{company:"萤火虫航天",country:"🇺🇸 美国",founded:2014,
+ valuation:"约20-30亿美元（估算）",valuationUSD:2500,totalFundingUSD:500,
+ totalFunding:"约5亿美元",status:"私有",
+ companyType:"商业",rockets:["Alpha","Beta（在研）","月球着陆器"],
+ techRoute:"液氧/煤油（Alpha）+ 液氧/甲烷（Beta），碳纤维结构，Beta可复用",
+ leoPayload:"1t / 8t",nextFlight:"2025-Q1",
+ keyMilestone:"Alpha完成NASA VCLS商业任务，获月球着陆器合同",
+ investors:["沙特阿美（战略入股）","MAX Ventures","EWC Ventures","Aspen Technology Capital","NASA商业合同"],
+ rounds:[
+   {name:"重组/A轮（破产重组后）",amount:"约1.5亿美元",date:"2017-2020",note:"原公司2017年破产，沙特阿美注资重组"},
+   {name:"B轮",amount:"约1.75亿美元",date:"2021-10"},
+   {name:"C轮",amount:"约1亿美元",date:"2023"},
+   {name:"NASA CLPS月球合同",amount:"1.12亿美元",date:"2023",note:"Blue Ghost月球着陆器合同"}
+ ],
+ note:"2014年成立，2017年曾破产，沙特阿美战略注资后重生。Alpha多次商业飞行，Blue Ghost月球着陆器是重大里程碑。Beta中型可复用版是下一阶段核心。"},
+
+{company:"相对论空间",country:"🇺🇸 美国",founded:2015,
+ valuation:"约43亿美元（2022高峰），现估约25亿美元",valuationUSD:2500,totalFundingUSD:1600,
+ totalFunding:"约16亿美元",status:"私有",
+ companyType:"商业",rockets:["Terran 1（已停产）","Terran R（在研）"],
+ techRoute:"液氧/甲烷，80%+结构件3D打印，Terran R一级可复用",
+ leoPayload:"20t（Terran R）",nextFlight:"2026（Terran R目标）",
+ keyMilestone:"2023年Terran 1未能入轨后战略转向，All-in Terran R",
+ investors:["DCVC（Data Collective）","Tiger Global","Mark Cuban","Playground Global","Sozo Ventures","Fontinalis Partners","Y Combinator","Obvious Ventures"],
+ rounds:[
+   {name:"YC + 天使轮",amount:"约120万美元",date:"2015-2016"},
+   {name:"A轮",amount:"3500万美元",date:"2018"},
+   {name:"B轮",amount:"1.4亿美元",date:"2019",note:"DCVC领投"},
+   {name:"C轮",amount:"2.4亿美元",date:"2020"},
+   {name:"D轮",amount:"3.25亿美元",date:"2021-06",note:"估值24亿美元"},
+   {name:"E轮",amount:"6.5亿美元",date:"2022-06",note:"估值43亿美元"},
+   {name:"F轮（传闻）",amount:"约3-4亿美元",date:"2024",note:"用于Terran R研发，细节未公开"}
+ ],
+ note:"以「第一家完全3D打印的运载火箭公司」定位融资。Terran 1未能入轨后，公司All-In转向中型可复用Terran R，2026年首飞是关键节点。"},
+
+{company:"ABL Space Systems",country:"🇺🇸 美国",founded:2017,
+ valuation:"约24亿美元（2022估值，现可能缩水）",valuationUSD:2400,totalFundingUSD:1100,
+ totalFunding:"约11亿美元",status:"私有",
+ companyType:"商业",rockets:["RS1"],
+ techRoute:"液氧/煤油，9发动机集群，模块化快速集成，24小时发射准备",
+ leoPayload:"1.35t",nextFlight:"2025-Q3",
+ keyMilestone:"两次首飞失败（2023），第三次尝试是生存关键",
+ investors:["Lockheed Martin（战略投资）","T.Rowe Price","8VC","BlackRock","Obsidian","SoftBank Vision Fund（传闻）"],
+ rounds:[
+   {name:"种子/A轮",amount:"约6000万美元",date:"2017-2020"},
+   {name:"B轮",amount:"约2.4亿美元",date:"2021",note:"洛克希德战略领投"},
+   {name:"C轮",amount:"约2.25亿美元",date:"2021-11"},
+   {name:"D轮",amount:"约5.8亿美元",date:"2022",note:"估值24亿美元"}
+ ],
+ note:"洛克希德马丁的战略投资使其具备政府快响任务背书，但RS1连续两次首飞失败是重大挑战。快速集成理念吸引军方关注。"},
+
+{company:"蓝箭航天",country:"🇨🇳 中国",founded:2015,
+ valuation:"约130亿人民币（约18亿美元）",valuationUSD:1800,totalFundingUSD:560,
+ totalFunding:"约40亿人民币（约5.5亿美元）",status:"私有（Pre-IPO）",
+ companyType:"商业",rockets:["朱雀一号（已退役）","朱雀二号","朱雀三号（在研）"],
+ techRoute:"液氧/甲烷，全球首型成功入轨甲烷火箭，ZQ-3可复用路线",
+ leoPayload:"6t / 21t",nextFlight:"2025-Q2",
+ keyMilestone:"2023年7月ZQ-2全球首型甲烷火箭成功入轨",
+ investors:["IDG资本","国科嘉和（中科院）","深创投","陕西省国资委","北京亦庄国际投资","哈工大科技园基金","招商局创投"],
+ rounds:[
+   {name:"天使轮",amount:"5000万人民币",date:"2016",note:"哈工大系基金"},
+   {name:"A轮",amount:"1亿人民币",date:"2017"},
+   {name:"A+/B轮",amount:"约5亿人民币",date:"2018-2019",note:"IDG领投"},
+   {name:"C轮",amount:"约12亿人民币",date:"2021"},
+   {name:"D轮",amount:"约15亿人民币",date:"2022",note:"估值约100亿人民币"},
+   {name:"E轮",amount:"约7亿人民币",date:"2024",note:"ZQ-2成功后估值130亿人民币"}
+ ],
+ note:"中国商业液体甲烷火箭赛道绝对领先者，ZQ-2的成功是里程碑。下一步ZQ-3可复用版是IPO前最关键的技术节点，上市窗口预计2025-2026年。"},
+
+{company:"天兵科技",country:"🇨🇳 中国",founded:2019,
+ valuation:"约100亿人民币（约14亿美元）",valuationUSD:1400,totalFundingUSD:490,
+ totalFunding:"约35亿人民币（约4.8亿美元）",status:"私有",
+ companyType:"商业",rockets:["天龙一号（固体，已停产）","天龙二号","天龙三号（在研）"],
+ techRoute:"液氧/煤油，中型液体火箭路线，天龙三号可复用",
+ leoPayload:"5t / 17t",nextFlight:"2025-Q3",
+ keyMilestone:"2023年4月天龙二号首飞成功，中国商业液体火箭先驱",
+ investors:["鼎晖投资","云晖资本","央视基金","山东省国资委","中科创星","红杉中国（传闻）"],
+ rounds:[
+   {name:"Pre-A轮",amount:"约1亿人民币",date:"2019"},
+   {name:"A轮",amount:"约3亿人民币",date:"2020-2021"},
+   {name:"B轮",amount:"约8亿人民币",date:"2021"},
+   {name:"C轮",amount:"12亿人民币",date:"2022-12",note:"估值约70亿人民币"},
+   {name:"D轮",amount:"15亿人民币",date:"2023-10",note:"估值约100亿人民币，TL-2成功后估值提升"}
+ ],
+ note:"2023年天龙二号成功，是中国液体商业火箭最早成功者之一。2024年天龙三号首飞中途故障，整改后2025年再次冲刺。"},
+
+{company:"东方空间",country:"🇨🇳 中国",founded:2020,
+ valuation:"约60亿人民币（约8亿美元）",valuationUSD:800,totalFundingUSD:280,
+ totalFunding:"约20亿人民币（约2.8亿美元）",status:"私有",
+ companyType:"商业",rockets:["引力一号"],
+ techRoute:"四级全固体，海上平台发射，大型固体运力路线",
+ leoPayload:"6.5t",nextFlight:"2025-Q1",
+ keyMilestone:"2024年1月引力一号首飞成功，固体运力全球第一",
+ investors:["中科院系基金","青岛国信发展（青岛国资）","红杉中国","华登国际","招商局资本"],
+ rounds:[
+   {name:"天使/Pre-A轮",amount:"约2亿人民币",date:"2020-2021"},
+   {name:"A轮",amount:"约5亿人民币",date:"2022"},
+   {name:"B轮",amount:"约10亿人民币",date:"2023-08",note:"引力一号备战阶段"},
+   {name:"C轮",amount:"约3亿人民币",date:"2024",note:"首飞成功后追加"}
+ ],
+ note:"成立仅4年即完成固体大型火箭首飞，效率极高。海上发射平台完工是重要基础设施里程碑，商业运营已启动，节奏快速。"},
+
+{company:"星际荣耀（北京）",country:"🇨🇳 中国",founded:2016,
+ valuation:"约80亿人民币（约11亿美元）",valuationUSD:1100,totalFundingUSD:420,
+ totalFunding:"约30亿人民币（约4.2亿美元）",status:"私有",
+ companyType:"商业",rockets:["双曲线一号（固体）","双曲线二号（液体，在研）","双曲线三号（液体可复用，在研）"],
+ techRoute:"固体（已飞）+ 液氧/煤油（在研），双曲线三号可复用路线",
+ leoPayload:"0.26t（一号）/ 计划8t（三号）",nextFlight:"2025-Q2",
+ keyMilestone:"2019年中国首家入轨的商业固体火箭，双曲线二号液体版在研",
+ investors:["经纬中国","IDG资本","凯辉基金","国科控股","招商局创投","中金资本"],
+ rounds:[
+   {name:"A轮",amount:"约2.5亿人民币",date:"2018"},
+   {name:"B轮",amount:"约7亿人民币",date:"2019",note:"双曲线一号成功入轨后"},
+   {name:"C轮",amount:"约12亿人民币",date:"2021"},
+   {name:"D轮",amount:"约8.5亿人民币",date:"2023"}
+ ],
+ note:"中国第一家实现轨道入轨的商业火箭公司（2019年），奠定先发优势。液体火箭双曲线二号是下一阶段，可复用三号是长期目标。"},
+
+{company:"中科宇航",country:"🇨🇳 中国",founded:2018,
+ valuation:"约40亿人民币（约5.5亿美元）",valuationUSD:550,totalFundingUSD:350,
+ totalFunding:"约25亿人民币（约3.5亿美元）",status:"私有",
+ companyType:"商业",rockets:["力箭一号（固体）","力箭二号（液体，在研）"],
+ techRoute:"固体（力箭一号）+ 液氧/煤油（力箭二号），中科院背景",
+ leoPayload:"1.5t（一号）",nextFlight:"2025-Q2",
+ keyMilestone:"力箭一号创中国固体火箭运力纪录，一箭26星",
+ investors:["中科院控股","广东省国资","广州南沙国资","中金资本","合肥产业基金"],
+ rounds:[
+   {name:"A轮",amount:"约6亿人民币",date:"2019"},
+   {name:"B轮",amount:"约9亿人民币",date:"2021"},
+   {name:"C轮",amount:"约10亿人民币",date:"2023"}
+ ],
+ note:"中科院直接孵化背景，科研转化色彩强，力箭一号一箭26星商业纪录。力箭二号液体版进入关键研发阶段，商业星座市场潜力大。"},
+
+{company:"Space One",country:"🇯🇵 日本",founded:2018,
+ valuation:"未公开",valuationUSD:300,totalFundingUSD:270,
+ totalFunding:"约400亿日元（约2.7亿美元）",status:"私有",
+ companyType:"商业",rockets:["KAIROS"],
+ techRoute:"四级全固体，快速响应，和歌山本土发射场",
+ leoPayload:"0.25t",nextFlight:"2025-Q1",
+ keyMilestone:"2024年3月首飞自毁，2025年整改后再次尝试",
+ investors:["佳能电子（主要股东）","IHI航空宇宙","清水建设","INCJ日本产业革新投资机构"],
+ rounds:[
+   {name:"成立融资",amount:"约100亿日元",date:"2018",note:"四家企业联合出资"},
+   {name:"追加融资A",amount:"约150亿日元",date:"2021"},
+   {name:"追加融资B",amount:"约150亿日元",date:"2023"}
+ ],
+ note:"日本首款商业小型固体火箭，佳能电子主导，定位政府快响小卫星市场。首飞失败是挑战，2025年再飞是关键。和歌山发射场已建成是重要资产。"},
+
+{company:"ispace（日本）",country:"🇯🇵 日本",founded:2010,
+ valuation:"约600亿日元（约4亿美元，JASDAQ上市）",valuationUSD:400,totalFundingUSD:350,
+ totalFunding:"约350亿日元（约2.4亿美元）",status:"上市(Tokyo: 9348)",
+ companyType:"商业",rockets:["不自研火箭（使用猎鹰9）"],
+ techRoute:"月球着陆器/ISRU，不自研火箭，与运载商合作",
+ leoPayload:"N/A",nextFlight:"2025（Mission 2）",
+ keyMilestone:"2023年Mission 1月球着陆器着陆时撞毁，Mission 2计划2025年",
+ investors:["SMBC日兴证券","UTokyo IPC","第一生命保险","清水建设","公开市场"],
+ rounds:[
+   {name:"A-C轮",amount:"约100亿日元",date:"2013-2020"},
+   {name:"D轮（上市前）",amount:"约200亿日元",date:"2021"},
+   {name:"JASDAQ上市",amount:"约50亿日元",date:"2022-04"}
+ ],
+ note:"严格来说ispace是月球运输/资源公司而非火箭公司，但其Mission 2-3计划将使用新格伦，与运载生态深度绑定。"},
+
+{company:"Skyrora",country:"🇬🇧 英国",founded:2017,
+ valuation:"未公开（估计约5000万英镑）",valuationUSD:65,totalFundingUSD:63,
+ totalFunding:"约5000万英镑（约6300万美元）",status:"私有",
+ companyType:"商业",rockets:["Skyrora XL","Skyrora 1（小型测试）"],
+ techRoute:"液氧/煤油，苏格兰SaxaVord本土发射，欧洲SSO专用",
+ leoPayload:"0.315t",nextFlight:"2026（目标）",
+ keyMilestone:"苏格兰SaxaVord发射场获批，是英国首个本土航天港",
+ investors:["英国航天局UKSA（补贴）","苏格兰企业局SE","欧洲区域发展基金ERDF","Techstart Ventures","私人天使"],
+ rounds:[
+   {name:"种子/A轮",amount:"约1500万英镑",date:"2017-2021"},
+   {name:"UKSA补贴（In-Orbit Demonstration）",amount:"约1000万英镑",date:"2021-2022"},
+   {name:"UKSA补贴（LaunchUK计划）",amount:"约2500万英镑",date:"2023-2024"}
+ ],
+ note:"英国政府LaunchUK战略直接扶持，SaxaVord是欧洲SSO发射的战略地理优势（高纬度）。规模较小，首飞前仍需融资。"},
+
+{company:"Orbex",country:"🇬🇧 英国",founded:2015,
+ valuation:"未公开（估计约2亿英镑）",valuationUSD:250,totalFundingUSD:180,
+ totalFunding:"约1.4亿英镑（约1.8亿美元）",status:"私有",
+ companyType:"商业",rockets:["Prime（液体生物推进剂）"],
+ techRoute:"液氧/生物丙烷（可再生燃料）小型火箭，苏格兰Sutherland发射场",
+ leoPayload:"0.18t",nextFlight:"2025-2026（目标）",
+ keyMilestone:"全球首款以液氧/生物丙烷为推进剂的商业火箭，绿色航天概念",
+ investors:["英国航天局UKSA","欧洲投资银行EIB","Mustard Seed（影响力基金）","苏格兰国家投资银行SNIB","Elysian Capital"],
+ rounds:[
+   {name:"A轮",amount:"约4000万英镑",date:"2019"},
+   {name:"B轮",amount:"约5000万英镑",date:"2021",note:"EIB参与"},
+   {name:"C轮",amount:"约5000万英镑",date:"2023",note:"苏格兰国家投资银行领投"}
+ ],
+ note:"独特的「绿色推进剂」（生物丙烷）定位使其在ESG投资叙事下获得支持。Sutherland发射场是英国本土发射重要节点，2025-2026年首飞是生死线。"},
+
+{company:"Stoke Space",country:"🇺🇸 美国",founded:2019,
+ valuation:"约10-15亿美元（估算）",valuationUSD:1250,totalFundingUSD:175,
+ totalFunding:"约1.75亿美元",status:"私有",
+ companyType:"商业",rockets:["Nova（完全可复用两级）"],
+ techRoute:"液氧/液氢（独特主动冷却热防护），全级完全可复用，头锥气动减速",
+ leoPayload:"计划>5t（完全复用）",nextFlight:"2026-2027（目标）",
+ keyMilestone:"2023年完成上面级悬停试验，全可复用技术路线独特",
+ investors:["a16z（Andreessen Horowitz）","DCVC","NFX","Starshot（Bill Gates相关）","Gula Tech Adventures"],
+ rounds:[
+   {name:"种子轮",amount:"约950万美元",date:"2019-2020"},
+   {name:"A轮",amount:"6500万美元",date:"2022-03",note:"a16z领投"},
+   {name:"B轮",amount:"1亿美元",date:"2023-10",note:"估值10亿+美元"}
+ ],
+ note:"创始人来自SpaceX和蓝色起源，以「完全可复用」为核心差异化，上面级独特的气动热防护设计。a16z领投背书强，是最受瞩目的美国新兴航天初创之一。"},
+
+{company:"Phantom Space",country:"🇺🇸 美国",founded:2019,
+ valuation:"约5亿美元（估算）",valuationUSD:500,totalFundingUSD:100,
+ totalFunding:"约1亿美元",status:"私有",
+ companyType:"商业",rockets:["Daytona（小型）","Laguna（中型）"],
+ techRoute:"液氧/煤油，模块化小中型系列，快速制造",
+ leoPayload:"0.45t / 2t",nextFlight:"2026（目标）",
+ keyMilestone:"获Nanoracks/Voyager Space投资，聚焦政府快响市场",
+ investors:["Voyager Space Holdings","Nanoracks","Stellar Ventures","Gaingels"],
+ rounds:[
+   {name:"种子/A轮",amount:"约1亿美元",date:"2019-2023"}
+ ],
+ note:"较低知名度但有产业链背景（Nanoracks母公司Voyager Space），聚焦小型快响政府卫星，尚未完成首飞，进度滞后。"}
+];
+
+// ──────────────────────────────────────────
+// PAGE ROUTING
+// ──────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const idx={'manifest':0,'overview':1,'capacity':2,'invest':3};
+  document.querySelectorAll('.nav-btn')[idx[id]].classList.add('active');
+  if(id==='overview') renderOverview();
+  else if(id==='capacity') renderCapacity();
+  else if(id==='invest') renderInvest();
+  window.scrollTo(0,0);
+}
+
+// ──────────────────────────────────────────
+// MANIFEST
+// ──────────────────────────────────────────
+let filtered=[...rockets];
+
+function propLabel(c){
+  return {lk:'液氧/煤油',lm:'液氧/甲烷',lh:'液氧/液氢',s:'固体燃料',h:'偏二甲肼'}[c]||c;
+}
+
+function applyFilters(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const fc=document.getElementById('f-country').value;
+  const fp=document.getElementById('f-prop').value;
+  const fs=document.getElementById('f-status').value;
+  const fr=document.getElementById('f-reuse').value;
+  const ft=document.getElementById('f-type').value;
+  filtered=rockets.filter(r=>{
+    if(q&&!`${r.name}${r.nameEn}${r.company}${r.country}${r.propellant}`.toLowerCase().includes(q))return false;
+    if(fc&&!r.country.includes(fc))return false;
+    if(fp&&!r.propellant.includes(fp))return false;
+    if(fs&&r.status!==fs)return false;
+    if(fr&&r.reusable!==fr&&!(fr==='是'&&r.reusable.startsWith('是')))return false;
+    if(ft&&r.companyType!==ft)return false;
+    return true;
+  });
+  document.getElementById('cnt').innerHTML=`显示 <strong>${filtered.length}</strong>/${rockets.length}`;
+  renderManifest();
+}
+
+function renderManifest(){
+  const el=document.getElementById('manifest-main');
+  const rows=filtered.map((r,i)=>{
+    const dates=r.plannedMissions.slice(0,3).map(m=>`<span class="date-chip">${m.date}</span>`).join('');
+    const more=r.plannedMissions.length>3?`<span class="date-chip" style="color:var(--text3)">+${r.plannedMissions.length-3}项</span>`:'';
+    return `<tr onclick="openModal(${r.id})" style="animation-delay:${i*.025}s">
+      <td><div class="rkt-name">${r.name}</div><div class="rkt-sub">${r.nameEn}</div></td>
+      <td>${r.country}</td>
+      <td style="color:var(--text2);font-size:11px">${r.company}</td>
+      <td><span class="badge ${r.companyType==='商业'?'ot-commercial':'ot-state'}">${r.companyType}</span></td>
+      <td><span class="badge ${r.status==='现役'?'s-active':'s-dev'}">${r.status}</span></td>
+      <td><span class="badge p-${r.propClass}">${propLabel(r.propClass)}</span></td>
+      <td><span class="payload-val">${(r.leoPayload/1000).toFixed(1)} t</span></td>
+      <td><span class="badge ${r.reusable.startsWith('是')?'r-yes':'r-no'}">${r.reusable}</span></td>
+      <td><div style="display:flex;flex-wrap:wrap;gap:2px">${dates}${more}</div></td>
+    </tr>`;}).join('');
+  el.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr>
+      <th>火箭型号</th><th>国家</th><th>公司</th><th>性质</th><th>状态</th>
+      <th>推进剂</th><th>LEO运力(吨)</th><th>可复用</th><th>拟发射时间窗口</th>
+    </tr></thead>
+    <tbody>${rows||'<tr><td colspan="9" style="text-align:center;padding:60px;color:var(--text3)">未找到匹配记录</td></tr>'}</tbody>
+  </table></div>`;
+}
+
+// ──────────────────────────────────────────
+// OVERVIEW
+// ──────────────────────────────────────────
+function renderOverview(){
+  const el=document.getElementById('overview-main');
+  const count=(arr,key,val)=>arr.filter(r=>r[key]===val||String(r[key]).startsWith(val)).length;
+  const group=(arr,fn)=>{const m={};arr.forEach(r=>{const k=fn(r);m[k]=(m[k]||0)+1;});return m;};
+
+  const byCountry=group(rockets,r=>r.country);
+  const byProp=group(rockets,r=>propLabel(r.propClass));
+  const byStatus=group(rockets,r=>r.status);
+  const byReuse={'可复用':rockets.filter(r=>r.reusable.startsWith('是')).length,'不可复用':rockets.filter(r=>!r.reusable.startsWith('是')).length};
+  const byType=group(rockets,r=>r.companyType);
+  const capacity_ranges={
+    '超重型 >50t':rockets.filter(r=>r.leoPayload>50000).length,
+    '重型 10-50t':rockets.filter(r=>r.leoPayload>=10000&&r.leoPayload<=50000).length,
+    '中型 2-10t':rockets.filter(r=>r.leoPayload>=2000&&r.leoPayload<10000).length,
+    '小型 <2t':rockets.filter(r=>r.leoPayload<2000).length
+  };
+
+  function barCard(title,data,colorClass=''){
+    const max=Math.max(...Object.values(data));
+    const rows=Object.entries(data).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div class="prog-row">
+        <div class="prog-lbl"><span>${k}</span><span style="font-family:'Orbitron',monospace;font-size:11px;color:var(--accent)">${v}</span></div>
+        <div class="prog-track"><div class="prog-fill ${colorClass}" style="width:${v/max*100}%"></div></div>
+      </div>`).join('');
+    return `<div class="stat-card"><div class="stat-card-title">${title}</div>${rows}</div>`;
+  }
+
+  el.innerHTML=`<div class="stats-page-grid">
+    ${barCard('按国家/地区分布',byCountry,'')}
+    ${barCard('推进剂类型分布',byProp,'blue')}
+    <div class="stat-card">
+      <div class="stat-card-title">研发状态</div>
+      ${Object.entries(byStatus).map(([s,n])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span class="badge ${s==='现役'?'s-active':'s-dev'}">${s}</span>
+          <span style="font-family:'Orbitron',monospace;font-size:22px;color:var(--text)">${n}</span>
+        </div>`).join('')}
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div style="font-size:11px;color:var(--text2)">现役占比 <strong style="color:var(--green)">${Math.round(byStatus['现役']/rockets.length*100)}%</strong>，研发中 <strong style="color:var(--accent3)">${Math.round((byStatus['研发中']||0)/rockets.length*100)}%</strong></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-title">商业 vs 国有</div>
+      ${Object.entries(byType).map(([t,n])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span class="badge ${t==='商业'?'ot-commercial':'ot-state'}">${t}</span>
+          <span style="font-family:'Orbitron',monospace;font-size:22px;color:var(--text)">${n}</span>
+        </div>`).join('')}
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div class="prog-track" style="height:10px;border-radius:5px">
+        <div class="prog-fill" style="width:${byType['商业']/rockets.length*100}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:6px">
+        <span>商业 ${Math.round(byType['商业']/rockets.length*100)}%</span>
+        <span>国有 ${Math.round((byType['国有']||0)/rockets.length*100)}%</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-title">可复用性</div>
+      ${Object.entries(byReuse).map(([t,n])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span class="badge ${t==='可复用'?'r-yes':'r-no'}">${t}</span>
+          <span style="font-family:'Orbitron',monospace;font-size:22px;color:var(--text)">${n}</span>
+        </div>`).join('')}
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div class="prog-track" style="height:10px;border-radius:5px">
+        <div class="prog-fill green" style="width:${byReuse['可复用']/rockets.length*100}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:6px">
+        <span>可复用 ${Math.round(byReuse['可复用']/rockets.length*100)}%</span>
+        <span>不可复用 ${Math.round(byReuse['不可复用']/rockets.length*100)}%</span>
+      </div>
+    </div>
+    ${barCard('运力级别分布',capacity_ranges,'purple')}
+  </div>`;
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('#overview-main .prog-fill').forEach(b=>{const w=b.style.width;b.style.width='0';requestAnimationFrame(()=>b.style.width=w);});
+  });
+}
+
+// ──────────────────────────────────────────
+// CAPACITY
+// ──────────────────────────────────────────
+function renderCapacity(){
+  const el=document.getElementById('capacity-main');
+  const sorted=[...rockets].filter(r=>r.leoPayload>0).sort((a,b)=>b.leoPayload-a.leoPayload);
+  const maxLEO=sorted[0].leoPayload;
+
+  const gradients=[
+    'linear-gradient(90deg,#f97316,#fbbf24)',
+    'linear-gradient(90deg,#f97316,#fb923c)',
+    'linear-gradient(90deg,#38bdf8,#2dd4bf)',
+    'linear-gradient(90deg,#38bdf8,#818cf8)',
+    'linear-gradient(90deg,#22c55e,#2dd4bf)',
+    'linear-gradient(90deg,#a78bfa,#f472b6)'
+  ];
+
+  const rankItems=sorted.map((r,i)=>`
+    <div class="rank-item" onclick="openModal(${r.id})">
+      <div class="rank-num ${i<3?'top':''}">${i+1}</div>
+      <div class="rank-label">
+        <div class="rank-name">${r.name}</div>
+        <div class="rank-co">${r.company} ${r.country.split(' ')[0]}</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <div class="rank-bar">
+          <div class="rank-bar-fill" style="width:${r.leoPayload/maxLEO*100}%;background:${gradients[i%gradients.length]}"></div>
+        </div>
+      </div>
+      <div class="rank-val">${(r.leoPayload/1000).toFixed(1)}t</div>
+    </div>`).join('');
+
+  // Annual capacity estimate
+  // estimated missions per rocket per year × payload
+  const annualData={
+    2025:{lk:0,lm:0,lh:0,s:0,h:0},
+    2026:{lk:0,lm:0,lh:0,s:0,h:0},
+    2027:{lk:0,lm:0,lh:0,s:0,h:0},
+    2028:{lk:0,lm:0,lh:0,s:0,h:0},
+    2029:{lk:0,lm:0,lh:0,s:0,h:0},
+    2030:{lk:0,lm:0,lh:0,s:0,h:0}
+  };
+  // approx flights/year per rocket
+  const flightsByYear={
+    1:{2025:40,2026:42,2027:44,2028:44,2029:44,2030:44},
+    2:{2025:4,2026:8,2027:15,2028:20,2029:24,2030:30},
+    3:{2025:2,2026:5,2027:7,2028:9,2029:10,2030:10},
+    4:{2025:3,2026:5,2027:6,2028:6,2029:6,2030:6},
+    5:{2025:5,2026:7,2027:8,2028:9,2029:10,2030:10},
+    6:{2025:2,2026:3,2027:3,2028:3,2029:3,2030:3},
+    8:{2025:1,2026:4,2027:7,2028:9,2029:10,2030:10},
+    9:{2025:0,2026:2,2027:5,2028:7,2029:9,2030:10},
+    10:{2025:3,2026:5,2027:6,2028:7,2029:7,2030:7},
+    11:{2025:3,2026:4,2027:4,2028:4,2029:4,2030:5},
+    12:{2025:2,2026:3,2027:3,2028:3,2029:3,2030:3},
+    13:{2025:20,2026:22,2027:24,2028:24,2029:24,2030:24},
+    16:{2025:3,2026:4,2027:4,2028:5,2029:5,2030:5},
+    17:{2025:6,2026:7,2027:7,2028:7,2029:7,2030:7},
+    23:{2025:4,2026:5,2027:6,2028:6,2029:6,2030:6},
+    24:{2025:2,2026:2,2027:2,2028:2,2029:2,2030:2},
+    25:{2025:5,2026:6,2027:6,2028:6,2029:6,2030:6},
+    26:{2025:4,2026:6,2027:7,2028:7,2029:7,2030:7},
+    30:{2025:6,2026:8,2027:8,2028:8,2029:8,2030:8},
+    31:{2025:6,2026:7,2027:8,2028:8,2029:8,2030:8}
+  };
+  for(const r of rockets){
+    if(!flightsByYear[r.id])continue;
+    for(const yr of [2025,2026,2027,2028,2029,2030]){
+      const f=flightsByYear[r.id][yr]||0;
+      annualData[yr][r.propClass]=(annualData[yr][r.propClass]||0)+f*r.leoPayload/1000;
+    }
+  }
+
+  const years=[2025,2026,2027,2028,2029,2030];
+  const totals=years.map(y=>Object.values(annualData[y]).reduce((a,b)=>a+b,0));
+  const maxTotal=Math.max(...totals);
+
+  // Stacked bar chart SVG
+  const svgH=220,svgW=700,pad={t:30,b:40,l:60,r:20};
+  const chartW=svgW-pad.l-pad.r,chartH=svgH-pad.t-pad.b;
+  const barW=chartW/years.length-16;
+  const propColors={lk:'#f97316',lm:'#38bdf8',lh:'#2dd4bf',s:'#a78bfa',h:'#ef4444'};
+  const propNames={lk:'液氧/煤油',lm:'液氧/甲烷',lh:'液氧/液氢',s:'固体',h:'偏二甲肼'};
+
+  let svgBars='';
+  years.forEach((yr,xi)=>{
+    const x=pad.l+xi*(chartW/years.length)+8;
+    let cumY=chartH+pad.t;
+    ['lk','lm','lh','s','h'].forEach(pc=>{
+      const val=annualData[yr][pc]||0;
+      if(val<1)return;
+      const h=val/maxTotal*chartH;
+      cumY-=h;
+      svgBars+=`<rect x="${x}" y="${cumY}" width="${barW}" height="${h}" fill="${propColors[pc]}" rx="2" opacity="0.85">
+        <title>${propNames[pc]}: ${Math.round(val)}万吨等效LEO运力</title></rect>`;
+    });
+    svgBars+=`<text x="${x+barW/2}" y="${pad.t-8}" text-anchor="middle" font-family="Orbitron,monospace" font-size="9" fill="#f97316">${Math.round(totals[xi])}kt</text>`;
+    svgBars+=`<text x="${x+barW/2}" y="${svgH-8}" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="#475569">${yr}</text>`;
+  });
+
+  // y-axis labels
+  let yLabels='';
+  for(let i=0;i<=4;i++){
+    const v=maxTotal/4*i;
+    const y=pad.t+chartH-chartH/4*i;
+    yLabels+=`<text x="${pad.l-8}" y="${y+4}" text-anchor="end" font-family="Space Mono,monospace" font-size="8" fill="#475569">${Math.round(v)}kt</text>`;
+    yLabels+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+chartW}" y2="${y}" stroke="#1e2d4a" stroke-width="1"/>`;
+  }
+
+  const legend=Object.entries(propColors).map(([pc,col])=>
+    `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:16px;font-size:11px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:${col};display:inline-block"></span>${propNames[pc]}</span>`
+  ).join('');
+
+  el.innerHTML=`
+    <div class="sec-hd"><div class="sec-hd-title">LEO 运力排行榜</div></div>
+    ${rankItems}
+    <div style="margin-top:32px">
+      <div class="sec-hd"><div class="sec-hd-title">2025–2030 年全球年度总运力估算</div></div>
+      <div class="chart-wrap">
+        <div class="chart-title">按推进剂类型划分的年度等效 LEO 运力趋势（千吨·次，基于计划发射频率×单次运力）</div>
+        <div style="margin-bottom:16px">${legend}</div>
+        <svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%;max-width:${svgW}px">
+          ${yLabels}${svgBars}
+          <line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+chartH}" stroke="#1e2d4a" stroke-width="1"/>
+        </svg>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;font-family:'Space Mono',monospace">
+          * 估算基于各火箭计划发射频率中位数，星舰运力按部分任务LEO满载计入，实际运力受飞行成功率影响。
+        </div>
+      </div>
+    </div>`;
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.rank-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0';requestAnimationFrame(()=>b.style.width=w);});
+  });
+}
+
+// ──────────────────────────────────────────
+// INVEST
+// ──────────────────────────────────────────
+let investView='cards'; // 'cards' | 'table'
+
+function renderInvest(){
+  const el=document.getElementById('invest-main');
+  // summary stats
+  const totalCos=investData.length;
+  const totalFundSum=investData.reduce((s,c)=>s+c.totalFundingUSD,0);
+  const topValuation=investData.reduce((a,b)=>a.valuationUSD>b.valuationUSD?a:b);
+
+  const summaryBar=`
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px">
+      <div style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.2em;margin-bottom:6px">收录公司数</div>
+      <div style="font-family:'Orbitron',monospace;font-size:24px;font-weight:700;color:var(--accent)">${totalCos}</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px">
+      <div style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.2em;margin-bottom:6px">总融资规模（估算）</div>
+      <div style="font-family:'Orbitron',monospace;font-size:24px;font-weight:700;color:var(--purple)">$${(totalFundSum/1000).toFixed(0)}B+</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px">
+      <div style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.2em;margin-bottom:6px">最高估值公司</div>
+      <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--text)">${topValuation.company}</div>
+      <div style="font-size:11px;color:var(--accent);margin-top:2px">${topValuation.valuation.split('（')[0]}</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px">
+      <div style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.2em;margin-bottom:6px">数据说明</div>
+      <div style="font-size:10px;color:var(--text3);line-height:1.6">估值及融资数据基于公开披露及行业追踪，截至2025年初，部分公司未公开数据为估算。</div>
+    </div>
+  </div>`;
+
+  const viewToggle=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3)">共 ${totalCos} 家公司 · 点击卡片查看详细融资记录</div>
+    <div style="display:flex;gap:4px">
+      <button onclick="setInvestView('cards')" id="inv-btn-cards"
+        style="background:${investView==='cards'?'rgba(249,115,22,.1)':'var(--surface)'};border:1px solid ${investView==='cards'?'var(--accent)':'var(--border)'};
+        color:${investView==='cards'?'var(--accent)':'var(--text3)'};padding:7px 14px;border-radius:5px;
+        font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:.1em">⊞ 卡片</button>
+      <button onclick="setInvestView('table')" id="inv-btn-table"
+        style="background:${investView==='table'?'rgba(249,115,22,.1)':'var(--surface)'};border:1px solid ${investView==='table'?'var(--accent)':'var(--border)'};
+        color:${investView==='table'?'var(--accent)':'var(--text3)'};padding:7px 14px;border-radius:5px;
+        font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:.1em">☰ 表格</button>
+    </div>
+  </div>`;
+
+  let mainContent='';
+  if(investView==='table'){
+    const maxFundTbl=Math.max(...investData.map(c=>c.totalFundingUSD));
+    const rows=investData.map((c,i)=>{
+      const statusColor=c.status.includes('破产')?'var(--red)':c.status.includes('上市')?'var(--green)':c.status.includes('暂停')?'var(--text3)':'var(--accent2)';
+      const rocketBadges=c.rockets.map(r=>`<span class="badge s-active" style="font-size:8px;margin:1px">${r}</span>`).join('');
+      const invChips=c.investors.slice(0,4).map(inv=>`<span class="inv-chip" style="font-size:9px">${inv}</span>`).join('');
+      const moreInv=c.investors.length>4?`<span class="inv-chip" style="font-size:9px;color:var(--text3)">+${c.investors.length-4}</span>`:'';
+      const latestRound=c.rounds[c.rounds.length-1];
+      const pct=Math.min(c.totalFundingUSD/maxFundTbl*100,100);
+      return `<tr style="animation-delay:${i*.02}s;cursor:default">
+        <td style="min-width:160px">
+          <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--text)">${c.country} ${c.company}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:2px">${rocketBadges}</div>
+        </td>
+        <td style="font-size:11px;color:var(--text2);text-align:center">${c.founded}</td>
+        <td style="min-width:150px">
+          <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--accent);white-space:normal;line-height:1.4">${c.valuation.split('（')[0].split('(')[0].trim()}</div>
+        </td>
+        <td style="min-width:120px">
+          <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--purple);font-weight:700">$${c.totalFundingUSD>=1000?(c.totalFundingUSD/1000).toFixed(1)+'B':c.totalFundingUSD+'M'}</div>
+          <div style="margin-top:5px;height:4px;width:100px;background:var(--bg2);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:2px"></div>
+          </div>
+        </td>
+        <td style="min-width:120px">
+          <div style="font-size:10px;color:var(--text2);white-space:normal;line-height:1.4">${latestRound.name}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--teal);margin-top:2px">${latestRound.amount}</div>
+          <div style="font-size:9px;color:var(--text3)">${latestRound.date}</div>
+        </td>
+        <td><span style="font-size:9px;color:${statusColor};font-family:'Space Mono',monospace;border:1px solid ${statusColor};padding:2px 6px;border-radius:3px;white-space:nowrap">${c.status.split('(')[0].split('（')[0].trim()}</span></td>
+        <td style="font-size:10px;color:var(--text2);min-width:180px;white-space:normal;line-height:1.55">${c.techRoute}</td>
+        <td><span style="font-family:'Orbitron',monospace;font-size:11px;color:var(--teal);white-space:nowrap">${c.leoPayload}</span></td>
+        <td style="font-size:10px;color:var(--accent2);white-space:nowrap">${c.nextFlight}</td>
+        <td style="min-width:160px">
+          <div style="display:flex;flex-wrap:wrap;gap:3px">${invChips}${moreInv}</div>
+        </td>
+        <td style="font-size:10px;color:var(--text3);min-width:200px;white-space:normal;line-height:1.55">${c.keyMilestone}</td>
+      </tr>`;}).join('');
+    mainContent=`<div class="table-wrap"><table>
+      <thead><tr>
+        <th>公司 / 火箭</th><th>成立</th><th>当前估值</th><th>总融资额</th><th>最新轮次</th>
+        <th>状态</th><th>技术路线</th><th>LEO运力</th><th>下次发射</th><th>主要投资方</th><th>关键里程碑</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  } else {
+    const maxFundingUSD=Math.max(...investData.map(c=>c.totalFundingUSD));
+    const cards=investData.map((c,i)=>{
+      const pct=Math.min(c.totalFundingUSD/maxFundingUSD*100,100);
+      const chips=c.investors.map(inv=>`<span class="inv-chip">${inv}</span>`).join('');
+      const extraInv='';
+      const roundRows=c.rounds.map(r=>`
+        <div class="round-item">
+          <span class="round-name">${r.name}</span>
+          <span class="round-val">${r.amount}</span>
+          <span class="round-date">${r.date}</span>
+        </div>`).join('');
+      const moreRounds='';
+      const rocketchips=c.rockets.map(r=>`<span class="badge s-active" style="font-size:8px">${r}</span>`).join(' ');
+      const statusColor=c.status.includes('破产')?'var(--red)':c.status.includes('上市')?'var(--green)':c.status.includes('暂停')?'var(--text3)':'var(--blue)';
+
+      return `<div class="inv-card" style="animation:ri .25s ease ${i*.03}s both">
+        <div class="inv-card-hd">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+              <div class="inv-title">${c.country} ${c.company}</div>
+              <span style="font-size:9px;color:${statusColor};font-family:'Space Mono',monospace;border:1px solid ${statusColor};
+                padding:1px 6px;border-radius:3px;opacity:.8">${c.status.split('(')[0].split('（')[0].trim()}</span>
+            </div>
+            <div class="inv-sub">成立 ${c.founded} · ${rocketchips}</div>
+          </div>
+          <div class="inv-valuation" style="flex-shrink:0;margin-left:12px">
+            <div class="inv-val-num" style="font-size:${c.valuationUSD>10000?'15px':'18px'}">${c.valuation.split('（')[0].split('(')[0].replace('约','').trim()}</div>
+            <div class="inv-val-lbl">当前估值</div>
+          </div>
+        </div>
+        <div class="inv-card-bd">
+          <div class="inv-meta">
+            <div><div class="inv-m-lbl">技术路线</div><div class="inv-m-val" style="font-size:11px;line-height:1.5">${c.techRoute}</div></div>
+            <div>
+              <div class="inv-m-lbl">LEO 运力</div>
+              <div class="inv-m-val" style="font-family:'Orbitron',monospace;color:var(--teal);font-size:13px">${c.leoPayload}</div>
+              <div class="inv-m-lbl" style="margin-top:8px">下次发射预期</div>
+              <div class="inv-m-val" style="color:var(--accent2);font-size:12px">${c.nextFlight}</div>
+            </div>
+          </div>
+          <div style="background:var(--bg2);border-radius:6px;padding:10px 12px;margin-bottom:12px;border:1px solid var(--border)">
+            <div class="inv-inv-label" style="margin-bottom:4px">关键里程碑</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.6">${c.keyMilestone}</div>
+          </div>
+          <div class="inv-investors" style="margin-bottom:12px">
+            <div class="inv-inv-label">主要投资方</div>
+            <div class="inv-chips">${chips}${extraInv}</div>
+          </div>
+          <div class="inv-rounds">
+            <div class="inv-inv-label" style="margin-bottom:4px">融资轮次明细</div>
+            ${roundRows}${moreRounds}
+          </div>
+          <div class="funding-bar-wrap">
+            <div class="funding-bar-lbl">
+              <span>总融资规模</span>
+              <span style="color:var(--purple);font-family:'Space Mono',monospace;font-size:11px">${c.totalFunding}</span>
+            </div>
+            <div class="funding-track"><div class="funding-fill" style="width:${pct}%"></div></div>
+            <div style="font-size:9px;color:var(--text3);margin-top:3px;font-family:'Space Mono',monospace">
+              $${c.totalFundingUSD>=1000?(c.totalFundingUSD/1000).toFixed(1)+'B':c.totalFundingUSD+'M'} USD 等值
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--text3);line-height:1.7;border-top:1px solid var(--border);padding-top:10px">${c.note}</div>
+        </div>
+      </div>`;}).join('');
+    mainContent=`<div class="inv-grid">${cards}</div>`;
+  }
+
+  el.innerHTML=summaryBar+viewToggle+mainContent;
+  requestAnimationFrame(()=>{
+    el.querySelectorAll('.funding-fill,.rank-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0';requestAnimationFrame(()=>b.style.width=w);});
+  });
+}
+
+function setInvestView(v){
+  investView=v;
+  renderInvest();
+}
+
+// ──────────────────────────────────────────
+// MODAL
+// ──────────────────────────────────────────
+function openModal(id){
+  const r=rockets.find(x=>x.id===id);
+  if(!r)return;
+  const engRows=r.engines.map(e=>`
+    <div class="eng-item">
+      <div><div class="eng-name">${e.name}</div><div class="eng-spec">${e.stage}</div></div>
+      <div><div style="font-size:9px;color:var(--text3);margin-bottom:2px">推力</div><div class="eng-spec">${e.thrust}</div></div>
+      <div><div style="font-size:9px;color:var(--text3);margin-bottom:2px">比冲 Isp</div><div class="eng-spec">${e.isp}</div></div>
+    </div>`).join('');
+  const missions=r.plannedMissions.map(m=>`
+    <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(30,45,74,.5);align-items:flex-start">
+      <span class="date-chip" style="flex-shrink:0;font-size:9px">${m.date}</span>
+      <span style="font-size:12px;color:var(--text2)">${m.mission}</span>
+      <span style="margin-left:auto;font-size:9px;color:var(--text3);flex-shrink:0">${m.orbit}</span>
+    </div>`).join('');
+  const hl=r.highlights.map(h=>`<div style="display:flex;gap:6px;margin-bottom:6px"><span style="color:var(--accent)">◆</span><span style="font-size:12px;color:var(--text2)">${h}</span></div>`).join('');
+
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-hd">
+      <div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:.2em;margin-bottom:5px">${r.country} · ${r.company}</div>
+        <div class="modal-title">${r.name} <span style="color:var(--text3);font-size:14px">/ ${r.nameEn}</span></div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <span class="badge ${r.status==='现役'?'s-active':'s-dev'}">${r.status}</span>
+          <span class="badge p-${r.propClass}">${r.propellant}</span>
+          <span class="badge ${r.reusable.startsWith('是')?'r-yes':'r-no'}">复用:${r.reusable}</span>
+          <span class="badge ${r.companyType==='商业'?'ot-commercial':'ot-state'}">${r.companyType}</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="m-grid" style="margin-bottom:20px">
+        <div><div class="m-field-label">LEO 运力</div><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--teal)">${(r.leoPayload/1000).toFixed(1)} 吨</div></div>
+        <div><div class="m-field-label">GTO 运力</div><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--blue)">${r.gtoPayload?(r.gtoPayload/1000).toFixed(1)+' 吨':'N/A'}</div></div>
+        <div><div class="m-field-label">首飞年份</div><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--accent)">${r.firstFlight}</div></div>
+        <div><div class="m-field-label">回收方式</div><div class="m-field-val" style="font-size:12px">${r.recoveryMethod}</div></div>
+        <div><div class="m-field-label">性质</div><div class="m-field-val" style="font-size:12px">${r.companyType}</div></div>
+        <div><div class="m-field-label">推进剂类型</div><div class="m-field-val" style="font-size:12px">${r.propellant}</div></div>
+      </div>
+      <div style="margin-bottom:18px">
+        <div class="m-sec-title">技术路线</div>
+        <div class="m-box" style="font-size:13px;line-height:1.75;color:var(--text2)">${r.techRoute}</div>
+      </div>
+      <div style="margin-bottom:18px">
+        <div class="m-sec-title">发动机参数</div>
+        ${engRows}
+      </div>
+      <div style="margin-bottom:18px">
+        <div class="m-sec-title">计划发射时间表</div>
+        <div class="m-box">${missions}</div>
+      </div>
+      <div style="margin-bottom:18px">
+        <div class="m-sec-title">概述</div>
+        <div class="m-box" style="font-size:13px;line-height:1.75;color:var(--text2)">${r.desc}</div>
+      </div>
+      <div>
+        <div class="m-sec-title">核心亮点</div>
+        <div class="m-box">${hl}</div>
+      </div>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('open');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// INIT
+applyFilters();
+</script>
+</body>
+</html>
